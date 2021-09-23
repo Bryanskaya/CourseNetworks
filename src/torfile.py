@@ -24,8 +24,6 @@ class Torrent(object):
         self.info_hash = sha1(info).digest()
         self.file = TorFile(self.content[b'info'])
 
-        print(self.content)
-
     @property
     def announce(self) -> str:
         return self.content[b'announce'].decode('utf-8')
@@ -37,9 +35,3 @@ class Torrent(object):
 
 if __name__ == "__main__":
     Torrent('tor.torrent')
-
-    # print(bencodepy.encode({'chicha': 1, 'chocho': 2}))
-    # print(bencodepy.encode(['chicha', 1, 'chocho', 2]))
-    #
-    # print(bencodepy.decode(b''))
-

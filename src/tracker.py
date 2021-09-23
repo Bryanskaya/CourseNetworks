@@ -57,8 +57,8 @@ class Tracker:
 
             return TrackerResponse(bencodepy.decode(data))
 
-    def close(self):
-        self.http_client.close()
+    async def close(self):
+        await self.http_client.close()
 
 
 # Style: "-PC1000-<random-characters>"
