@@ -13,6 +13,11 @@ class TrackerResponse:
     def __init__(self, response: dict):
         self.response = response
 
+    @property
+    def interval(self) -> int:
+        #TODO get
+        return self.response.get()
+
 
 class Tracker:
     def __init__(self, torrent: Torrent):
@@ -62,5 +67,5 @@ class Tracker:
 
 
 # Style: "-PC1000-<random-characters>"
-def _get_peer_id():  # TODO possible error
+def _get_peer_id() -> str:  # TODO possible error
     return '-PC1000-' + ''.join([str(random.randint(0, 9)) for _ in range(12)])

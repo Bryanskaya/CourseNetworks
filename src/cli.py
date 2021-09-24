@@ -12,7 +12,10 @@ def main():
     client = TorrentClient(Torrent(FNAME))
     task = loop.create_task(client.start())
 
-    loop.run_until_complete(task)
+    try:
+        loop.run_until_complete(task)
+    except:
+        logging.info("INFO: event loop was cancelled")
 
 
 if __name__ == '__main__':
