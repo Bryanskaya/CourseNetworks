@@ -3,10 +3,18 @@ import logging
 import bencodepy
 import random
 import aiohttp
+import socket
+import struct
 
 from torfile import Torrent
 
 PORT = 6889  # Port used by BitTorrent
+
+
+def decode_peer(bpeer: bytes) -> (str, int):
+    ip = socket.inet_ntoa(bpeer[:4])
+    port = int.from_bytes(bpeer[4:], "big")
+    return ip, port
 
 
 class TrackerResponse:
@@ -15,8 +23,19 @@ class TrackerResponse:
 
     @property
     def interval(self) -> int:
-        #TODO get
-        return self.response.get()
+        # 10 if interval not mentioned in response
+        return self.response.get(b'interval', 10)
+
+    @property
+    def peers(self):
+        peers = self.response[b'peers']
+        if type(peers) is list:
+            # TODO behavior for list of peers
+            return None
+        else:
+            peers = [decode_peer(peers[i:i+6])
+                     for i in range(0, len(peers), 6)]
+            return peers
 
 
 class Tracker:

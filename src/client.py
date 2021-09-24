@@ -7,17 +7,18 @@ import logging
 import time
 
 from protocol import PeerConnection
+from piece_man import PieceManager
 
-
-MAX_PEER_CONNECTIONS = 40
+MAX_PEER_CONNECTIONS = 3  # 40
 
 
 class TorrentClient:
+    abort = False
+
     def __init__(self, torrent: Torrent):
         self.tracker = Tracker(torrent)
-        self.peers = List[PeerConnection]
         self.available_peers = Queue()
-        self.abort = False
+        self.peers: List[PeerConnection] = []
         self.piece_manager = PieceManager(torrent)
 
     async def start(self):
@@ -27,16 +28,16 @@ class TorrentClient:
                       for _ in range(MAX_PEER_CONNECTIONS)]
 
         previous = None
-        interval = 30 * 60 # Seconds
+        interval = 30 * 60  # seconds between server requesting
 
         while True:
-            #TODO
+            # TODO check piece_manager is done
             if self.abort:
                 logging.info("INFO: Torrent is downloaded")
                 break
 
             cur_time = time.time()
-            if not previous or previous + interval < cur_time:
+            if previous is None or previous+interval < cur_time:
                 response = await self.tracker.connect(
                     # TODO uncomment when piece_manager will be implemented
                     # uploaded=self.piece_manager.bytes_uploaded,
@@ -45,51 +46,43 @@ class TorrentClient:
                 )
 
                 print('TRACKER RESPONSE:')
+                print(response.peers)
                 print(response.response)
 
                 if response:
                     previous = cur_time
+                    print('bu')
                     interval = response.interval
 
                     self._empty_queue()
 
                     for peer in response.peers:
+                        print(peer)
                         self.available_peers.put_nowait(peer) # Put an item into the queue without blocking.
             else:
-                await sleep(5)
+                await sleep(previous - cur_time + interval)
 
         await self.stop()
 
-
-    def stop(self) -> None:
+    async def stop(self) -> None:
         self.abort = True
 
         for peer in self.peers:
             peer.stop()
 
-        #TODO close piece_manager
+        # TODO close piece_manager
 
-        self.tracker.close()
+        await self.tracker.close()
 
     def _empty_queue(self) -> None:
         while not self.available_peers.empty():
             self.available_peers.get_nowait()   # Remove and return an item from the queue
 
     def _block_retrieved(self, peer_id: str, piece_index, block_offset, data) -> None:
-    #TODO piece_manager
+        pass
 
-
-
-
+    # TODO piece_manager
 
     async def stop(self):
         await self.tracker.close()
-
-
-
-
-class PieceManager:
-    def __init__(self, torrent: Torrent):
-        self.torrent = torrent
-
 
