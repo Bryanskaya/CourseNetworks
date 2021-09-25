@@ -19,8 +19,8 @@ class PeerConnection:
 
     def __init__(self, queue: Queue, info_hash: bytes, peer_id: str,
                  piece_manager: PieceManager, block_cb: Callable[[str, None, None, None], None]): #TODO 3x None
-        self.state = []     # TODO why array
-        self.peer_state = []
+        self.state = set()
+        self.peer_state = set()
         self.queue = queue
         self.info_hash = info_hash
         self.peer_id = peer_id
@@ -39,11 +39,11 @@ class PeerConnection:
                 self.reader, self.writer = await asyncio.open_connection(ip, port)
                 logging.info(" connection was opened, ip = " + ip)
 
-                #TODO handshake
+                buf = await self._do_handshake()
+                self.state.add(CHOKED)
 
                 #TODO comment in real src
 
-                self.state.append(CHOKED)
             except Exception as e:
                 print("Exception!", str(e))
                 logging.exception(e)
@@ -76,7 +76,16 @@ class PeerConnection:
             tries += 1
             buf = await self.reader.read(PeerStreamIterator.CHUNK_SIZE)
 
-        #TODO ТУТ!!! about decode
+        response = Handshake.decode(buf)
+        if response is None:
+            raise Exception()  # TODO protocol error (handshake are unable)
+        elif response.info_hash != self.info_hash:
+            raise Exception()  # TODO protocol error (invalid info_hash)
+
+        self.remote_id = response.peer_id
+        logging.info('handshake with peer {} are successful'.format(self.remote_id))
+
+        return buf[Handshake.length:]
 
 
 class PeerStreamIterator:
@@ -101,8 +110,11 @@ class PeerMessage:
     Handshake = None  # not part of the messages
     KeepAlive = None
 
+
 class Handshake(PeerMessage):
-    length = 49 + len('BitTorrent protocol')
+    pname = b'BitTorrent protocol'
+    length = 49 + len(pname)
+    msg_struct = '>B19s8x20s20s'
 
     def __init__(self, info_hash: bytes, peer_id: str):  #TODO bytes/str
         if isinstance(info_hash, str):
@@ -115,13 +127,22 @@ class Handshake(PeerMessage):
 
     def encode(self) -> bytes:
         return struct.pack(
-            '>B19s8x20s20s',
-            19,                         # Single byte (B)
-            b'BitTorrent protocol',     # String 19s
+            self.msg_struct,
+            len(self.pname),            # Single byte (B)
+            self.pname,                 # String 19s
                                         # Reserved 8x (pad byte, no value)
             self.info_hash,             # String 20s
             self.peer_id                # String 20s
         )
+
+    @classmethod
+    def decode(cls, data: bytes):
+        data = data[:Handshake.length]
+        logging.debug('decoding handshake: {}'.format(data))
+        if len(data) != Handshake.length:
+            return None
+        fields = struct.unpack(cls.msg_struct, data)
+        return cls(fields[2], fields[3])
 
     def __str__(self):
         return 'Handshake'
