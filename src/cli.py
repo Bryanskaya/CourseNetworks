@@ -6,7 +6,7 @@ from client import TorrentClient
 
 FNAME = 'tor.torrent'
 
-logging.basicConfig(level=logging.INFO, filename='info.log', filemode='w',
+logging.basicConfig(level=logging.DEBUG, filename='info.log', filemode='w',
                     format='%(asctime)s %(levelname)s: %(message)s')
 
 
