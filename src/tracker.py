@@ -32,7 +32,7 @@ class TrackerResponse:
         if type(peers) is list:
             # TODO behavior for list of peers
             return None
-        else:
+        else:   # string
             peers = [decode_peer(peers[i:i+6])
                      for i in range(0, len(peers), 6)]
             return peers
@@ -48,7 +48,7 @@ class Tracker:
         try:
             msg = tr_response.decode("utf-8")
             if "failure" in msg:
-                raise ConnectionError("ERROR: connection to tracker failed. "
+                raise ConnectionError(" connection to tracker failed. "
                                       "Code = " + msg)
         except UnicodeDecodeError:
             pass
@@ -69,7 +69,7 @@ class Tracker:
             params['event'] = 'started'
 
         url = self.torrent.announce + '?' + urlencode(params)
-        logging.info('INFO: connecting to tracker. URL: ' + url)
+        logging.info(' connecting to tracker. URL: ' + url)
 
         async with self.http_client.get(url) as response:
             if response.status != 200:

@@ -33,11 +33,11 @@ class TorrentClient:
         while True:
             # TODO check piece_manager is done
             if self.abort:
-                logging.info("INFO: Torrent is downloaded")
+                logging.info(" Torrent is downloaded")
                 break
 
             cur_time = time.time()
-            if previous is None or previous+interval < cur_time:
+            if previous is None or cur_time - previous >= interval:
                 response = await self.tracker.connect(
                     # TODO uncomment when piece_manager will be implemented
                     # uploaded=self.piece_manager.bytes_uploaded,
@@ -51,7 +51,6 @@ class TorrentClient:
 
                 if response:
                     previous = cur_time
-                    print('bu')
                     interval = response.interval
 
                     self._empty_queue()
