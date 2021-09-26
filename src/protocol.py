@@ -8,8 +8,21 @@ import struct
 from piece_man import PieceManager
 from peer_msg import *
 
+# TODO change string states to PeerState
 STOPPED = 'stopped'
 CHOKED = 'choked'
+
+
+class PeerState(object):
+    is_stopped = False
+    is_choked = True
+    is_interested = True
+
+    def stop(self):     self.is_stopped = True
+    def choke(self):    self.is_choked = True
+    def unchoke(self):  self.is_choked = False
+    def interest(self): self.is_interested = True
+    def uninterest(self): self.is_interested = False
 
 
 class PeerConnection:
@@ -75,6 +88,7 @@ class PeerConnection:
         while len(buf) < HandshakeMsg.length and tries < 10:
             tries += 1
             buf = await self.reader.read(PeerStreamIterator.CHUNK_SIZE)
+            # TODO read length of handshake message instead of chunk size => return value is None
 
         response = HandshakeMsg.decode(buf)
         if response is None:
@@ -97,7 +111,6 @@ class PeerConnection:
 class PeerStreamIterator:
     CHUNK_SIZE = 10 * 1024
 
-    def __init__(self, reader, initial: bytes = None):
+    def __init__(self, reader, initial: bytes = b''):
         self.reader = reader
-        self.buffer = initial if initial else b''
-
+        self.buffer = initial
