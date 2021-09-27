@@ -8,10 +8,6 @@ import struct
 from piece_man import PieceManager
 from peer_msg import *
 
-# TODO change string states to PeerState
-STOPPED = 'stopped'
-CHOKED = 'choked'
-
 
 class PeerState(object):
     is_stopped = False
@@ -30,9 +26,10 @@ class PeerConnection:
     writer: asyncio.StreamWriter = None
     reader: asyncio.StreamReader = None
 
-    def __init__(self, queue: Queue, info_hash: bytes, peer_id: str,
+    def __init__(self, id: int, queue: Queue, info_hash: bytes, peer_id: str,
                  piece_manager: PieceManager, block_cb: Callable[[str, None, None, None], None]): #TODO 3x None
-        self.state = set()
+        self.id = id
+        self.state = PeerState()
         self.peer_state = set()
         self.queue = queue
         self.info_hash = info_hash
@@ -41,32 +38,38 @@ class PeerConnection:
         self.block_cb = block_cb  # Callback function. It is called when block is received from the remote peer.
         self.future = asyncio.ensure_future(self._start())
 
+    def _log(self, lvl: int, msg: str = ''): logging.log(lvl, '|CONID {}| '.format(self.id) + msg)
+    def _info(self, msg: str): self._log(logging.INFO, msg)
+    def _warn(self, msg: str): self._log(logging.WARN, msg)
+    def _debug(self, msg: str): self._log(logging.DEBUG, msg)
+    def _exep(self, exp: Exception):
+        self._log(logging.ERROR)
+        logging.exception(exp)
+
     async def _start(self):
-        while STOPPED not in self.state:
+        while not self.state.is_stopped:
             ip, port = await self.queue.get()
-            print("Grab", ip, port)
-            logging.info(" assigned peer, id = " + ip)
+            self._info(" assigned peer, ip = {}".format(ip))
 
             try:
                 #TODO look at the comment in real src
                 self.reader, self.writer = await asyncio.open_connection(ip, port)
-                logging.info(" connection was opened, ip = " + ip)
+                self._info(" connection was opened, ip = " + ip)
 
                 buf = await self._do_handshake()
-                self.state.add(CHOKED)
                 await self._send_interested()
 
                 #TODO comment in real src
 
             except Exception as e:
                 print("Exception!", str(e))
-                logging.exception(e)
+                self._exep(e)
                 self.cancel()
                 raise e
             self.cancel()
 
     def cancel(self):
-        logging.info(' closing peer {ip}'.format(ip=self.remote_id))
+        self._info('closing peer {ip}'.format(ip=self.remote_id))
         if not self.future.done():
             self.future.cancel()
         if self.writer:
@@ -76,7 +79,7 @@ class PeerConnection:
         self.queue.task_done()
 
     def stop(self) -> None:
-        self.state.add(STOPPED)
+        self.state.stop()
         #TODO smth with future
 
     async def _do_handshake(self) -> bytes:
@@ -97,7 +100,7 @@ class PeerConnection:
             raise Exception()  # TODO protocol error (invalid info_hash)
 
         self.remote_id = response.peer_id
-        logging.info('handshake with peer {} are successful'.format(self.remote_id))
+        self._debug('handshake with peer {} are successful'.format(self.remote_id))
 
         return buf[HandshakeMsg.length:]
 
@@ -105,7 +108,7 @@ class PeerConnection:
         msg = InterestedMsg()
         self.writer.write(msg.encode())
         await self.writer.drain()
-        logging.debug('sending interested msg to {}'.format(self.remote_id))
+        self._debug('sending interested msg to {}'.format(self.remote_id))
 
 
 class PeerStreamIterator:

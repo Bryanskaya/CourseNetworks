@@ -22,10 +22,11 @@ class TorrentClient:
         self.piece_manager = PieceManager(torrent)
 
     async def start(self):
-        self.peers = [PeerConnection(self.available_peers, self.tracker.torrent.info_hash,
+        self.peers = [PeerConnection(i, self.available_peers,
+                                     self.tracker.torrent.info_hash,
                                      self.tracker.peer_id, self.piece_manager,
                                      self._block_retrieved)
-                      for _ in range(MAX_PEER_CONNECTIONS)]
+                      for i in range(MAX_PEER_CONNECTIONS)]
 
         previous = None
         interval = 30 * 60  # seconds between server requesting
