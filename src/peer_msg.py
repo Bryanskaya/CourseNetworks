@@ -1,5 +1,9 @@
 import logging
 import struct
+import bitstring
+
+
+REQUEST_SIZE = 2**14    # The default request size for blocks of pieces is 2^14 bytes.
 
 
 class PeerMessage(object):
@@ -44,22 +48,123 @@ class NotInterestedMsg(PeerMessage):
 
 class HaveMsg(PeerMessage):
     id = 4
+    # TODO index
 
+    @classmethod
+    def decode(cls, data: bytes):
+        msg_struct = '>IbI'
+
+        # TODO change to method
+        logging.debug('Decoding Have of length: {}'.format(len(data)))
+        ind = struct.unpack(msg_struct, data)[2]
+
+        return cls(ind)
+
+    def __str__(self):
+        return 'Have'
 
 class BitFieldMsg(PeerMessage):
     id = 5
+
+    def __init__(self, data: bytes):
+        self.bitfield = bitstring.BitArray(data)
+
+    @classmethod
+    def decode(cls, data: bytes):
+        msg_struct_UnInt = '>I'
+        msg_struct_UnIntSChar = '>Ib'
+
+        msg_len = struct.unpack(
+            msg_struct_UnInt,
+            data[: 4]
+        )[0]
+
+        # TODO change to method
+        logging.debug('Decoding BitField of length: {}'.format(msg_len))
+
+        parts = struct.unpack(msg_struct_UnIntSChar + str(msg_len - 1) + 's', data)
+        return cls(parts[2])
+
+    def __str__(self):
+        return 'BitField'
 
 
 class RequestMsg(PeerMessage):
     id = 6
 
+    def __init__(self, index: int, begin: int, length: int = REQUEST_SIZE):
+        self.index = index
+        self.begin = begin
+        self.length = length
+
+    @classmethod
+    def decode(cls, data: bytes):
+        msg_struct = '>IbIII'
+
+        logging.debug('Decoding Request of length: {}'.format(len(data)))
+        parts = struct.unpack(
+            msg_struct,
+            data)
+
+        return cls(parts[2], parts[3], parts[4])
+
+    def __str__(self):
+        return 'Request'
+
 
 class PieceMsg(PeerMessage):
     id = 7
 
+    msg_len = 9
+
+    def __init__(self, index: int, begin: int, block: bytes):
+        self.index = index
+        self.begin = begin
+        self.block = block
+
+    @classmethod
+    def decode(cls, data: bytes):
+        msg_struct_UnInt = '>I'
+        msg_struct = '>IbII'
+
+        # TODO change to method
+        logging.debug('Decoding Piece of length: {}'.format(len(data)))
+        length = struct.unpack(
+            msg_struct_UnInt,
+            data[: 4])[0]
+        parts = struct.unpack(
+            msg_struct + str(length - PieceMsg.msg_len) + 's',
+            data[: length + 4])
+
+        return cls(parts[2], parts[3], parts[4])
+
+    def __str__(self):
+        return 'PieceMsg,'
+
 
 class CancelMsg(PeerMessage):
     id = 8
+
+    def __init__(self, index: int, begin: int, length: int = REQUEST_SIZE):
+        self.index = index
+        self.begin = begin
+        self.length = length
+
+    @classmethod
+    def decode(cls, data: bytes):
+        msg_struct = '>IbIII'
+
+        # TODO change to method
+        logging.debug('Decoding Cancel of length: {}'.format(len(data)))
+
+        parts = struct.unpack(
+            msg_struct,
+            data)
+
+        return cls(parts[2], parts[3], parts[4])
+
+    def __str__(self):
+        return 'Cancel'
 
 
 class PortMsg(PeerMessage):
@@ -107,3 +212,6 @@ class HandshakeMsg(PeerMessage):
 
 class KeepAliveMsg(PeerMessage):
     id = None
+
+    def __str__(self):
+        return 'KeepAlive'
