@@ -78,7 +78,7 @@ class TorrentClient:
         while not self.available_peers.empty():
             self.available_peers.get_nowait()   # Remove and return an item from the queue
 
-    def _block_retrieved(self, peer_id: str, piece_index, block_offset, data) -> None:
+    def _block_retrieved(self, peer_id: str, piece_index: int, block_offset, data) -> None:
         pass
 
     # TODO piece_manager

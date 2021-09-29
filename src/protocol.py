@@ -80,7 +80,8 @@ class PeerConnection:
 
     def stop(self) -> None:
         self.state.stop()
-        #TODO smth with future
+        if not self.future.done():
+            self.future.cancel()
 
     async def _do_handshake(self) -> bytes:
         self.writer.write(HandshakeMsg(self.info_hash, self.peer_id).encode())
@@ -117,3 +118,93 @@ class PeerStreamIterator:
     def __init__(self, reader, initial: bytes = b''):
         self.reader = reader
         self.buffer = initial
+
+    async def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        while True:
+            try:
+                data = await self.reader.read(PeerStreamIterator.CHUNK_SIZE)
+                if data:
+                    self.buffer += data
+                    msg = self.parse()
+                    if msg: return msg
+                else:
+                    logging.debug("There is no data to read from stream")
+
+                    if self.buffer:
+                        msg = self.parse()
+                        if msg: return msg  #TODO strange
+                    raise StopAsyncIteration()
+            except ConnectionResetError:
+                logging.debug("Connection was closed by peer")
+                raise StopAsyncIteration()
+            except Exception as exc:
+                logging.exception('Error when iterating over stream!')
+                raise StopAsyncIteration()
+
+    def parse(self):
+        header_len = 4
+        msg_struct_UnInt = '>I'
+        msg_struct_SChar = '>b'
+
+        if len(self.buffer) > 4:    # 4 - The `length prefix` is a four byte big-endian value. To identify the message
+            msg_len = struct.unpack(
+                msg_struct_UnInt,
+                self.buffer[:4]
+            )[0]
+
+            if not msg_len:
+                return KeepAliveMsg()
+
+            if len(self.buffer) >= msg_len:
+                msg_id = struct.unpack(
+                    msg_struct_SChar,
+                    self.buffer[4:5]
+                )[0]
+
+                def _get_data():
+                    return self.buffer[: header_len + msg_len]
+
+                def _fix_buf():
+                    self.buffer = self.buffer[header_len + msg_len :]
+
+                if msg_id is BitFieldMsg.id:
+                    data = _get_data()
+                    _fix_buf()
+                    return BitFieldMsg.decode(data)
+                if msg_id is InterestedMsg.id:
+                    _fix_buf()
+                    return InterestedMsg()
+                if msg_id is NotInterestedMsg.id:
+                    _fix_buf()
+                    return NotInterestedMsg()
+                if msg_id is ChokeMsg.id:
+                    _fix_buf()
+                    return ChokeMsg()
+                if msg_id is UnchokeMsg.id:
+                    _fix_buf()
+                    return UnchokeMsg()
+                if msg_id is HaveMsg.id:
+                    data = _get_data()
+                    _fix_buf()
+                    return HaveMsg.decode(data)
+                if msg_id is PieceMsg.id:
+                    data = _get_data()
+                    _fix_buf()
+                    return PieceMsg.decode(data)
+                if msg_id is RequestMsg.id:
+                    data = _get_data()
+                    _fix_buf()
+                    return RequestMsg.decode(data)
+                if msg_id is CancelMsg.id:
+                    data = _get_data()
+                    _fix_buf()
+                    return CancelMsg.decode(data)
+
+                logging.info("Message {} is not defined".format(msg_id))
+            else:
+                logging.debug('Not enough space in buffer to parse')
+
+        return None
