@@ -13,12 +13,14 @@ class PeerState(object):
     is_stopped = False
     is_choked = True
     is_interested = True
+    is_pending_request = False
 
     def stop(self):     self.is_stopped = True
     def choke(self):    self.is_choked = True
     def unchoke(self):  self.is_choked = False
     def interest(self): self.is_interested = True
     def uninterest(self): self.is_interested = False
+    def pending_reduest(self): self.is_pending_request = True
 
 
 class PeerConnection:
@@ -59,7 +61,16 @@ class PeerConnection:
                 buf = await self._do_handshake()
                 await self._send_interested()
 
+                async for msg in PeerStreamIterator(self.reader, buf):
+                    print(msg)
+
                 #TODO comment in real src
+
+                if self.state.is_choked:
+                    if self.state.is_interested:
+                        if not self.state.is_pending_request:
+                            self.state.pending_reduest()
+                            await self._request_piece()
 
             except Exception as e:
                 print("Exception!", str(e))
@@ -111,6 +122,9 @@ class PeerConnection:
         await self.writer.drain()
         self._debug('sending interested msg to {}'.format(self.remote_id))
 
+    async def _request_piece(self):
+        pass
+        # TODO start here
 
 class PeerStreamIterator:
     CHUNK_SIZE = 10 * 1024
@@ -119,7 +133,7 @@ class PeerStreamIterator:
         self.reader = reader
         self.buffer = initial
 
-    async def __aiter__(self):
+    def __aiter__(self):
         return self
 
     async def __anext__(self):
@@ -136,13 +150,15 @@ class PeerStreamIterator:
                     if self.buffer:
                         msg = self.parse()
                         if msg: return msg  #TODO strange
-                    raise StopAsyncIteration()
+                    break
             except ConnectionResetError:
                 logging.debug("Connection was closed by peer")
-                raise StopAsyncIteration()
+                raise StopAsyncIteration
             except Exception as exc:
                 logging.exception('Error when iterating over stream!')
-                raise StopAsyncIteration()
+                raise StopAsyncIteration
+
+        raise StopAsyncIteration
 
     def parse(self):
         header_len = 4
