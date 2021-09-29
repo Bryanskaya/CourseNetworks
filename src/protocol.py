@@ -80,7 +80,8 @@ class PeerConnection:
 
     def stop(self) -> None:
         self.state.stop()
-        #TODO smth with future
+        if not self.future.done():
+            self.future.cancel()
 
     async def _do_handshake(self) -> bytes:
         self.writer.write(HandshakeMsg(self.info_hash, self.peer_id).encode())
@@ -118,7 +119,8 @@ class PeerStreamIterator:
         self.reader = reader
         self.buffer = initial
 
-    async def __aiter__(self):  return self
+    async def __aiter__(self):
+        return self
 
     async def __anext__(self):
         while True:
@@ -129,7 +131,6 @@ class PeerStreamIterator:
                     msg = self.parse()
                     if msg: return msg
                 else:
-                # TODO change to method
                     logging.debug("There is no data to read from stream")
 
                     if self.buffer:
@@ -137,14 +138,11 @@ class PeerStreamIterator:
                         if msg: return msg  #TODO strange
                     raise StopAsyncIteration()
             except ConnectionResetError:
-                # TODO change to method
                 logging.debug("Connection was closed by peer")
                 raise StopAsyncIteration()
             except Exception as exc:
-                # TODO change to method
                 logging.exception('Error when iterating over stream!')
                 raise StopAsyncIteration()
-        # TODO ??? never reach raise StopAsyncIteration()
 
     def parse(self):
         header_len = 4
@@ -175,19 +173,19 @@ class PeerStreamIterator:
                 if msg_id is BitFieldMsg.id:
                     data = _get_data()
                     _fix_buf()
-                    return BitFieldMsg.decode(data) # TODO check it
+                    return BitFieldMsg.decode(data)
                 if msg_id is InterestedMsg.id:
                     _fix_buf()
-                    return InterestedMsg()  # TODO check the right understood
+                    return InterestedMsg()
                 if msg_id is NotInterestedMsg.id:
                     _fix_buf()
-                    return NotInterestedMsg()  # TODO check the right understood
+                    return NotInterestedMsg()
                 if msg_id is ChokeMsg.id:
                     _fix_buf()
-                    return ChokeMsg()  # TODO check the right understood
+                    return ChokeMsg()
                 if msg_id is UnchokeMsg.id:
                     _fix_buf()
-                    return UnchokeMsg()  # TODO check the right understood
+                    return UnchokeMsg()
                 if msg_id is HaveMsg.id:
                     data = _get_data()
                     _fix_buf()
@@ -205,35 +203,8 @@ class PeerStreamIterator:
                     _fix_buf()
                     return CancelMsg.decode(data)
 
-                # TODO change to method
                 logging.info("Message {} is not defined".format(msg_id))
             else:
-                # TODO change to method
                 logging.debug('Not enough space in buffer to parse')
 
         return None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -48,13 +48,14 @@ class NotInterestedMsg(PeerMessage):
 
 class HaveMsg(PeerMessage):
     id = 4
-    # TODO index
+
+    def __init__(self, index: int):
+        self.index = index
 
     @classmethod
     def decode(cls, data: bytes):
         msg_struct = '>IbI'
 
-        # TODO change to method
         logging.debug('Decoding Have of length: {}'.format(len(data)))
         ind = struct.unpack(msg_struct, data)[2]
 
@@ -79,7 +80,6 @@ class BitFieldMsg(PeerMessage):
             data[: 4]
         )[0]
 
-        # TODO change to method
         logging.debug('Decoding BitField of length: {}'.format(msg_len))
 
         parts = struct.unpack(msg_struct_UnIntSChar + str(msg_len - 1) + 's', data)
@@ -139,7 +139,7 @@ class PieceMsg(PeerMessage):
         return cls(parts[2], parts[3], parts[4])
 
     def __str__(self):
-        return 'PieceMsg,'
+        return 'PieceMsg'
 
 
 class CancelMsg(PeerMessage):
@@ -154,7 +154,6 @@ class CancelMsg(PeerMessage):
     def decode(cls, data: bytes):
         msg_struct = '>IbIII'
 
-        # TODO change to method
         logging.debug('Decoding Cancel of length: {}'.format(len(data)))
 
         parts = struct.unpack(
