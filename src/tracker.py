@@ -71,7 +71,7 @@ class Tracker:
         url = self.torrent.announce + '?' + urlencode(params)
         logging.info(' connecting to tracker. URL: ' + url)
 
-        async with self.http_client.get(url) as response:
+        async with self.http_client.get(url, ssl=False) as response:
             if response.status != 200:
                 raise ConnectionError("ERROR: connection to tracker failed. "
                                       "Code = " + str(response.status))
