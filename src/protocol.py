@@ -13,14 +13,20 @@ class PeerState(object):
     is_stopped = False
     is_choked = True
     is_interested = True
-    is_pending_request = False
+    is_pending = False
 
     def stop(self):     self.is_stopped = True
     def choke(self):    self.is_choked = True
     def unchoke(self):  self.is_choked = False
     def interest(self): self.is_interested = True
     def uninterest(self): self.is_interested = False
-    def pending_reduest(self): self.is_pending_request = True
+    def start_pending(self): self.is_pending = True
+    def stop_pending(self): self.is_pending = False
+
+
+class OtherPeerState(PeerState):
+    is_choked = False
+    is_interested = False
 
 
 class PeerConnection:
@@ -29,10 +35,10 @@ class PeerConnection:
     reader: asyncio.StreamReader = None
 
     def __init__(self, id: int, queue: Queue, info_hash: bytes, peer_id: str,
-                 piece_manager: PieceManager, block_cb: Callable[[str, None, None, None], None]): #TODO 3x None
+                 piece_manager: PieceManager, block_cb: Callable[[str, int, int, bytes], None]): #TODO 3x None
         self.id = id
         self.state = PeerState()
-        self.peer_state = set()
+        self.peer_state = OtherPeerState()
         self.queue = queue
         self.info_hash = info_hash
         self.peer_id = peer_id
@@ -63,14 +69,13 @@ class PeerConnection:
 
                 async for msg in PeerStreamIterator(self.reader, buf):
                     print(msg)
+                    if self.state.is_stopped:
+                        break
 
-                #TODO comment in real src
+                    await self._process_response(msg)
+                    await self._create_message()
 
-                if self.state.is_choked:
-                    if self.state.is_interested:
-                        if not self.state.is_pending_request:
-                            self.state.pending_reduest()
-                            await self._request_piece()
+                    #TODO comment in real src
 
             except Exception as e:
                 print("Exception!", str(e))
@@ -78,6 +83,42 @@ class PeerConnection:
                 self.cancel()
                 raise e
             self.cancel()
+
+    async def _process_response(self, msg: PeerMessage):
+        if type(msg) is BitFieldMsg:
+            msg: BitFieldMsg
+            self.piece_manager.add_peer(self.remote_id, msg.bitfield)
+        elif type(msg) is InterestedMsg:
+            self.peer_state.interest()
+        elif type(msg) is NotInterestedMsg:
+            self.peer_state.uninterest()
+        elif type(msg) is ChokeMsg:
+            self.state.choke()
+        elif type(msg) is UnchokeMsg:
+            self.state.unchoke()
+        elif type(msg) is HaveMsg:
+            msg: HaveMsg
+            self.piece_manager.update_peer(self.remote_id, msg.index)
+        elif type(msg) is KeepAliveMsg:
+            pass
+        elif type(msg) is PieceMsg:
+            msg: PieceMsg
+            self.state.stop_pending()
+            self.block_cb(
+                self.remote_id,
+                msg.index,
+                msg.begin,
+                msg.block
+            )
+        elif type(msg) is RequestMsg:
+            pass
+        elif type(msg) is CancelMsg:
+            pass
+
+    async def _create_message(self):
+        if self.state.is_choked and self.state.is_interested and not self.state.is_pending:
+            self.state.start_pending()
+            await self._request_piece()
 
     def cancel(self):
         self._info('closing peer {ip}'.format(ip=self.remote_id))
@@ -126,6 +167,7 @@ class PeerConnection:
         pass
         # TODO start here
 
+
 class PeerStreamIterator:
     CHUNK_SIZE = 10 * 1024
 
@@ -136,27 +178,28 @@ class PeerStreamIterator:
     def __aiter__(self):
         return self
 
-    async def __anext__(self):
+    async def __anext__(self) -> PeerMessage:
         while True:
             try:
                 data = await self.reader.read(PeerStreamIterator.CHUNK_SIZE)
-                if data:
-                    self.buffer += data
-                    msg = self.parse()
-                    if msg: return msg
-                else:
-                    logging.debug("There is no data to read from stream")
-
-                    if self.buffer:
-                        msg = self.parse()
-                        if msg: return msg  #TODO strange
-                    break
             except ConnectionResetError:
                 logging.debug("Connection was closed by peer")
                 raise StopAsyncIteration
             except Exception as exc:
                 logging.exception('Error when iterating over stream!')
                 raise StopAsyncIteration
+
+            if data:
+                self.buffer += data
+                msg = self.parse()
+                if msg: return msg
+            else:
+                logging.debug("There is no data to read from stream")
+
+                if self.buffer:
+                    msg = self.parse()
+                    if msg: return msg  # TODO strange
+                break
 
         raise StopAsyncIteration
 

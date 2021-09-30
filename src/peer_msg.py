@@ -2,13 +2,15 @@ import logging
 import struct
 import bitstring
 
-
 REQUEST_SIZE = 2**14    # The default request size for blocks of pieces is 2^14 bytes.
 
 
 class PeerMessage(object):
     id: int
     msg_struct: str
+
+    def action(self, actor):
+        print('they called me')
 
     def encode(self) -> bytes:
         raise NotImplementedError
