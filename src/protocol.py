@@ -164,8 +164,10 @@ class PeerConnection:
         self._debug('sending interested msg to {}'.format(self.remote_id))
 
     async def _request_piece(self):
-        pass
-        # TODO start here
+        # TODO get piece from manager
+        msg = RequestMsg(0, 0, REQUEST_SIZE).encode()
+        self.writer.write(msg)
+        await self.writer.drain()
 
 
 class PeerStreamIterator:

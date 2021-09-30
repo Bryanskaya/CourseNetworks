@@ -66,6 +66,7 @@ class HaveMsg(PeerMessage):
     def __str__(self):
         return 'Have'
 
+
 class BitFieldMsg(PeerMessage):
     id = 5
 
@@ -93,19 +94,28 @@ class BitFieldMsg(PeerMessage):
 
 class RequestMsg(PeerMessage):
     id = 6
+    msg_struct = '>IbIII'
 
     def __init__(self, index: int, begin: int, length: int = REQUEST_SIZE):
         self.index = index
         self.begin = begin
         self.length = length
 
+    def encode(self) -> bytes:
+        return struct.pack(
+            self.msg_struct,
+            13,
+            self.id,
+            self.index,
+            self.begin,
+            self.length
+        )
+
     @classmethod
     def decode(cls, data: bytes):
-        msg_struct = '>IbIII'
-
         logging.debug('Decoding Request of length: {}'.format(len(data)))
         parts = struct.unpack(
-            msg_struct,
+            cls.msg_struct,
             data)
 
         return cls(parts[2], parts[3], parts[4])
