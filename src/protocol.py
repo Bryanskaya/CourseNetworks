@@ -33,12 +33,12 @@ class PeerConnection:
     remote_id = None
     writer: asyncio.StreamWriter = None
     reader: asyncio.StreamReader = None
+    state = PeerState()
+    peer_state = OtherPeerState()
 
     def __init__(self, id: int, queue: Queue, info_hash: bytes, peer_id: str,
-                 piece_manager: PieceManager, block_cb: Callable[[str, int, int, bytes], None]): #TODO 3x None
+                 piece_manager: PieceManager, block_cb: Callable[[str, int, int, bytes], None]):
         self.id = id
-        self.state = PeerState()
-        self.peer_state = OtherPeerState()
         self.queue = queue
         self.info_hash = info_hash
         self.peer_id = peer_id
@@ -57,12 +57,12 @@ class PeerConnection:
     async def _start(self):
         while not self.state.is_stopped:
             ip, port = await self.queue.get()
-            self._info(" assigned peer, ip = {}".format(ip))
+            self._info("assigned peer, ip = {}".format(ip))
 
             try:
                 #TODO look at the comment in real src
                 self.reader, self.writer = await asyncio.open_connection(ip, port)
-                self._info(" connection was opened, ip = " + ip)
+                self._info("connection was opened, ip = " + ip)
 
                 buf = await self._do_handshake()
                 await self._send_interested()
@@ -116,7 +116,7 @@ class PeerConnection:
             pass
 
     async def _create_message(self):
-        if self.state.is_choked and self.state.is_interested and not self.state.is_pending:
+        if (not self.state.is_choked) and self.state.is_interested and (not self.state.is_pending):
             self.state.start_pending()
             await self._request_piece()
 
@@ -143,7 +143,7 @@ class PeerConnection:
         tries = 0
         while len(buf) < HandshakeMsg.length and tries < 10:
             tries += 1
-            buf = await self.reader.read(PeerStreamIterator.CHUNK_SIZE)
+            buf += await self.reader.read(PeerStreamIterator.CHUNK_SIZE)
             # TODO read length of handshake message instead of chunk size => return value is None
 
         response = HandshakeMsg.decode(buf)

@@ -3,6 +3,21 @@ from torfile import Torrent
 import logging
 import bitstring
 
+
+class Block:
+    Missing = 0
+    Pending = 1
+    Retrieved = 2
+
+    data: bytes = None
+
+    def __init__(self, piece: int, offset: int, length: int):
+        self.piece = piece
+        self.offset = offset
+        self.length = length
+        self.status = self.Missing
+
+
 class PieceManager:
     def __init__(self, torrent: Torrent):
         self.torrent = torrent

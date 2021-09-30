@@ -45,20 +45,20 @@ class TorrentClient:
                     # downloaded=self.piece_manager.bytes_downloaded,
                     first_call=previous if previous else False
                 )
+                previous = cur_time
+                interval = response.interval
 
                 print('TRACKER RESPONSE:')
                 print(response.peers)
                 print(response.response)
 
-                if response:
-                    previous = cur_time
-                    interval = response.interval
+                if not response:
+                    continue
 
-                    self._empty_queue()
-
-                    for peer in response.peers:
-                        print(peer)
-                        self.available_peers.put_nowait(peer) # Put an item into the queue without blocking.
+                self._empty_queue()
+                for peer in response.peers:
+                    print(peer)
+                    self.available_peers.put_nowait(peer) # Put an item into the queue without blocking.
             else:
                 await sleep(previous - cur_time + interval)
 
