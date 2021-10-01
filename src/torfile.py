@@ -32,6 +32,27 @@ class Torrent(object):
     def total_size(self) -> int:
         return self.file.length
 
+    @property
+    def pieces(self):
+        data = self.content[b'info'][b'pieces'] # TODO
+        pieces = []
+        offset = 0
+        length = len(data)
+
+        while offset < length:
+            pieces.append(data[offset: offset + 20])   # The info pieces is a string representing all pieces SHA1 hashes (each 20 bytes long)
+            offset += 20
+
+        return pieces
+
+    @property
+    def piece_length(self) -> int:
+        return self.content[b'info'][b'piece length'] # TODO
+
+    @property
+    def output_file(self):
+        return self.content[b'info'][b'name'].decode('utf-8')   # TODO
+
 
 if __name__ == "__main__":
     Torrent('tor.torrent')
