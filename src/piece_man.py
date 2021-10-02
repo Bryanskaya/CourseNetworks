@@ -33,7 +33,7 @@ class Piece:
         self.blocks = blocks
         self.hash = hash_value
 
-    def next_request(self) -> Optional[Block, None]:
+    def next_request(self) -> Optional[Block]:
         for block in self.blocks:
             if block.status is Block.Missing:
                 block.status = Block.Pending
@@ -119,7 +119,7 @@ class PieceManager:
 
         logging.debug('update peer in PieceManager')
 
-    def next_request(self, peer_id: str) -> Optional[Block, None]:
+    def next_request(self, peer_id: str) -> Optional[Block]:
         if peer_id not in self.peers:
             return None
 
@@ -160,7 +160,7 @@ class PieceManager:
 
             self.ongoing_pieces.remove(piece)
             self.have_pieces.append(piece)
-            logging.info('Piece {} downloaded, {.2f}% done'.
+            logging.info('Piece {} downloaded, {:.2%} done'.
                          format(piece.index,
                                 len(self.have_pieces) / len(self.torrent.pieces)))
         else:
@@ -179,7 +179,7 @@ class PieceManager:
 
         return None
 
-    def _next_ongoing(self, peer_id: str) -> (Block, None):
+    def _next_ongoing(self, peer_id: str) -> Optional[Block]:
         for piece in self.ongoing_pieces:
             if self.peers[peer_id][piece.index]:
                 block = piece.next_request()

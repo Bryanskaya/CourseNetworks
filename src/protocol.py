@@ -118,7 +118,9 @@ class PeerConnection:
     async def _create_message(self):
         if (not self.state.is_choked) and self.state.is_interested and (not self.state.is_pending):
             self.state.start_pending()
-            await self._request_piece()
+            success = await self._request_piece()
+            if not success:
+                self.state.stop_pending()
 
     def cancel(self):
         self._info('closing peer {ip}'.format(ip=self.remote_id))
@@ -163,11 +165,19 @@ class PeerConnection:
         await self.writer.drain()
         self._debug('sending interested msg to {}'.format(self.remote_id))
 
-    async def _request_piece(self):
-        # TODO get piece from manager
-        msg = RequestMsg(0, 0, REQUEST_SIZE).encode()
+    async def _request_piece(self) -> bool:
+        block = self.piece_manager.next_request(self.remote_id)
+        if block is None:
+            return False
+
+        msg = RequestMsg(block.piece, block.offset, block.length).encode()
+
+        logging.debug('Requesting block {} of piece {} from {}'.
+                      format(block.offset, block.piece, self.remote_id))
+
         self.writer.write(msg)
         await self.writer.drain()
+        return True
 
 
 class PeerStreamIterator:
