@@ -67,19 +67,21 @@ class Tracker:
 
         if first_call:
             params['event'] = 'started'
+        try:
+            url = self.torrent.announce + '?' + urlencode(params)
+            logging.info(' connecting to tracker. URL: ' + url)
 
-        url = self.torrent.announce + '?' + urlencode(params)
-        logging.info(' connecting to tracker. URL: ' + url)
+            async with self.http_client.get(url, ssl=False) as response:
+                if response.status != 200:
+                    raise ConnectionError("ERROR: connection to tracker failed. "
+                                          "Code = " + str(response.status))
 
-        async with self.http_client.get(url, ssl=False) as response:
-            if response.status != 200:
-                raise ConnectionError("ERROR: connection to tracker failed. "
-                                      "Code = " + str(response.status))
+                data = await response.read()
+                self.raise_error(data)
 
-            data = await response.read()
-            self.raise_error(data)
-
-            return TrackerResponse(bencodepy.decode(data))
+                return TrackerResponse(bencodepy.decode(data))
+        except Exception as exp:
+            print(exp)
 
     async def close(self):
         await self.http_client.close()

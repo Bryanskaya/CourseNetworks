@@ -79,7 +79,7 @@ class PieceManager:
     def __init__(self, torrent: Torrent):
         self.torrent = torrent
         self.missing_pieces = self._initiate_pieces()
-        self.fd = os.open(self.torrent.output_file, os.O_RDWR | os.O_CREAT)
+        self.fd = os.open(self.torrent.output_file, os.O_RDWR | os.O_CREAT | os.O_TRUNC)
 
     def _initiate_pieces(self) -> [Piece]:
         # TODO refactor

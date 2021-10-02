@@ -9,7 +9,7 @@ import time
 from protocol import PeerConnection
 from piece_man import PieceManager
 
-MAX_PEER_CONNECTIONS = 3  # 40
+MAX_PEER_CONNECTIONS = 20  # 40
 
 
 class TorrentClient:

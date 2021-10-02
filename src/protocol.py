@@ -3,6 +3,7 @@ from typing import Callable
 
 import logging
 import asyncio
+import concurrent
 import struct
 
 from piece_man import PieceManager
@@ -10,10 +11,11 @@ from peer_msg import *
 
 
 class PeerState(object):
-    is_stopped = False
-    is_choked = True
-    is_interested = True
-    is_pending = False
+    def __init__(self):
+        self.is_stopped = False
+        self.is_choked = True
+        self.is_interested = True
+        self.is_pending = False
 
     def stop(self):     self.is_stopped = True
     def choke(self):    self.is_choked = True
@@ -25,19 +27,22 @@ class PeerState(object):
 
 
 class OtherPeerState(PeerState):
-    is_choked = False
-    is_interested = False
+    def __init__(self):
+        super().__init__()
+        self.is_choked = False
+        self.is_interested = False
 
 
 class PeerConnection:
     remote_id = None
     writer: asyncio.StreamWriter = None
     reader: asyncio.StreamReader = None
-    state = PeerState()
-    peer_state = OtherPeerState()
 
     def __init__(self, id: int, queue: Queue, info_hash: bytes, peer_id: str,
                  piece_manager: PieceManager, block_cb: Callable[[str, int, int, bytes], None]):
+        self.state = PeerState()
+        self.peer_state = OtherPeerState()
+
         self.id = id
         self.queue = queue
         self.info_hash = info_hash
@@ -69,6 +74,7 @@ class PeerConnection:
 
                 async for msg in PeerStreamIterator(self.reader, buf):
                     print(msg)
+                    self._debug(str(msg))
                     if self.state.is_stopped:
                         break
 
@@ -77,12 +83,25 @@ class PeerConnection:
 
                     #TODO comment in real src
 
-            except Exception as e:
-                print("Exception!", str(e))
-                self._exep(e)
-                self.cancel()
-                raise e
-            self.cancel()
+            except concurrent.futures._base.CancelledError as exp:
+                print("Exception!!!")
+                print(exp)
+                logging.error("сейчас будет error")
+                self._exep(exp)
+                logging.error("ну вот")
+                await self.cancel()
+                raise exp
+
+            except Exception as exp:
+                print("Exception!")
+                print(exp)
+                logging.error("сейчас будет error")
+                self._exep(exp)
+                logging.error("ну вот")
+                await self.cancel()
+                raise exp
+            self._info('Out of loop')
+            await self.cancel()
 
     async def _process_response(self, msg: PeerMessage):
         if type(msg) is BitFieldMsg:
@@ -122,13 +141,13 @@ class PeerConnection:
             if not success:
                 self.state.stop_pending()
 
-    def cancel(self):
+    async def cancel(self):
         self._info('closing peer {ip}'.format(ip=self.remote_id))
         if not self.future.done():
-            self.future.cancel()
+            pass # self.future.cancel()
         if self.writer:
             self.writer.close()
-        # TODO self.reader.close()
+            await self.writer.wait_closed()
 
         self.queue.task_done()
 
@@ -172,8 +191,8 @@ class PeerConnection:
 
         msg = RequestMsg(block.piece, block.offset, block.length).encode()
 
-        logging.debug('Requesting block {} of piece {} from {}'.
-                      format(block.offset, block.piece, self.remote_id))
+        self._debug('Requesting block {} of piece {} from {}'.
+                    format(block.offset, block.piece, self.remote_id))
 
         self.writer.write(msg)
         await self.writer.drain()
