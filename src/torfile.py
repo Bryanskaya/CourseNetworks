@@ -34,7 +34,7 @@ class Torrent(object):
 
     @property
     def pieces(self):
-        data = self.content[b'info'][b'pieces'] # TODO
+        data = self.content[b'info'][b'pieces']
         pieces = []
         offset = 0
         length = len(data)
@@ -47,11 +47,11 @@ class Torrent(object):
 
     @property
     def piece_length(self) -> int:
-        return self.content[b'info'][b'piece length'] # TODO
+        return self.content[b'info'][b'piece length']
 
     @property
     def output_file(self):
-        return self.content[b'info'][b'name'].decode('utf-8')   # TODO
+        return self.content[b'info'][b'name'].decode('utf-8')
 
 
 if __name__ == "__main__":
