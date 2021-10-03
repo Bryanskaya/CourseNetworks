@@ -23,9 +23,15 @@ class PeerMessage(object):
 class ChokeMsg(PeerMessage):
     id = 0
 
+    def __str__(self):
+        return 'Choke'
+
 
 class UnchokeMsg(PeerMessage):
     id = 1
+
+    def __str__(self):
+        return 'Unchoke'
 
 
 class InterestedMsg(PeerMessage):

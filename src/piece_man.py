@@ -79,7 +79,7 @@ class PieceManager:
     def __init__(self, torrent: Torrent):
         self.torrent = torrent
         self.missing_pieces = self._initiate_pieces()
-        self.fd = os.open(self.torrent.output_file, os.O_RDWR | os.O_CREAT | os.O_TRUNC)
+        self._file_init()
 
     def _initiate_pieces(self) -> [Piece]:
         # TODO refactor
@@ -92,7 +92,7 @@ class PieceManager:
                 blocks = [Block(index, offset * REQUEST_SIZE, REQUEST_SIZE)
                           for offset in range(piece_block_n)]
             else:
-                last_length = self.torrent.total_size % self.torrent.piece_length
+                last_length = self.torrent.total_size - self.torrent.piece_length * index
                 num_blocks = math.ceil(last_length / REQUEST_SIZE)
                 blocks = [Block(index, offset * REQUEST_SIZE, REQUEST_SIZE)
                           for offset in range(num_blocks)]
@@ -131,8 +131,11 @@ class PieceManager:
         if block is not None:
             return block
 
-        self._get_rarest_piece(peer_id)
-        return self._next_ongoing(peer_id)
+        piece = self._get_rarest_piece(peer_id)
+        if piece is None:
+            return self._oldest_request(peer_id)
+        else:
+            return self._next_ongoing(peer_id)
 
     def block_received(self, peer_id: str, piece_index: int, block_offset, data):
         logging.debug('Received block {0} for piece {1} from peer {2}: '.
@@ -148,7 +151,7 @@ class PieceManager:
                 piece = p
                 break
         else:
-            logging.warning('Trying to update piece that is not ongoing!')
+            logging.warning('Trying to update piece {} that is not ongoing!'.format(piece_index))
             return
 
         piece.block_received(block_offset, data)
@@ -171,7 +174,22 @@ class PieceManager:
             logging.warning('Piece {} corrupted, refetching'.
                             format(piece.index))
 
-    def _expired_requests(self, peer_id: str) -> (Block, None):
+    def _oldest_request(self, peer_id: str) -> Optional[Block]:
+        if not self.pending_blocks:
+            return None
+
+        latest: Optional[Block] = None
+        for request in self.pending_blocks:
+            if self.peers[peer_id][request.piece] and \
+                    (latest is None or request.last_usage < latest.last_usage):
+                latest = request
+
+        if latest is not None:
+            logging.info('Re-requesting block {} for piece {}'.format(latest.offset, latest.piece))
+            latest.last_usage = time.time()
+        return latest
+
+    def _expired_requests(self, peer_id: str) -> Optional[Block]:
         current = time.time()
 
         for request in self.pending_blocks:
@@ -195,14 +213,18 @@ class PieceManager:
                 return block
         return None
 
-    def _get_rarest_piece(self, peer_id: str) -> Piece:
+    def _get_rarest_piece(self, peer_id: str) -> Optional[Piece]:
         piece_count = defaultdict(int)
-        for piece in self.missing_pieces:
+
+        for piece in self.missing_pieces[::-1]:
             if not self.peers[peer_id][piece.index]:
                 continue
             for peer in self.peers:
                 if self.peers[peer][piece.index]:
                     piece_count[piece] += 1
+
+        if not piece_count:
+            return None
 
         rarest_piece = min(piece_count, key=lambda p: piece_count[p])
 
@@ -216,5 +238,14 @@ class PieceManager:
         os.lseek(self.fd, pos, os.SEEK_SET)
         os.write(self.fd, piece.data)
 
+    def _file_init(self):
+        self.fd = os.open(self.torrent.output_file, os.O_RDWR | os.O_CREAT | os.O_TRUNC)
+        pos = (len(self.torrent.pieces) - 1) * self.torrent.piece_length
+        os.lseek(self.fd, pos, os.SEEK_SET)
+        os.write(self.fd, b'\0')
+
+    @property
+    def complete(self) -> bool:
+        return len(self.torrent.pieces) == len(self.have_pieces)
 
 

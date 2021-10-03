@@ -5,8 +5,9 @@ from torfile import Torrent
 from client import TorrentClient
 
 FNAME = 'tor.torrent'
+log_lvl = logging.DEBUG
 
-logging.basicConfig(level=logging.DEBUG, filename='info.log', filemode='w',
+logging.basicConfig(level=log_lvl, filename='info.log', filemode='w',
                     format='%(asctime)s %(levelname)s: %(message)s')
 
 

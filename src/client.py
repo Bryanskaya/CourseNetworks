@@ -9,7 +9,7 @@ import time
 from protocol import PeerConnection
 from piece_man import PieceManager
 
-MAX_PEER_CONNECTIONS = 20  # 40
+MAX_PEER_CONNECTIONS = 40  # 40
 
 
 class TorrentClient:
@@ -32,7 +32,10 @@ class TorrentClient:
         interval = 30 * 60  # seconds between server requesting
 
         while True:
-            # TODO check piece_manager is done
+            if self.piece_manager.complete:
+                print('Torrent fully downloaded!')
+                logging.info('Torrent fully downloaded!')
+                break
             if self.abort:
                 logging.info(" Torrent is downloaded")
                 break
@@ -60,7 +63,7 @@ class TorrentClient:
                     print(peer)
                     self.available_peers.put_nowait(peer) # Put an item into the queue without blocking.
             else:
-                await sleep(previous - cur_time + interval)
+                await sleep(5)
 
         await self.stop()
 

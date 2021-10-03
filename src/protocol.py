@@ -51,7 +51,7 @@ class PeerConnection:
         self.block_cb = block_cb  # Callback function. It is called when block is received from the remote peer.
         self.future = asyncio.ensure_future(self._start())
 
-    def _log(self, lvl: int, msg: str = ''): logging.log(lvl, '|CONID {}| '.format(self.id) + msg)
+    def _log(self, lvl: int, msg: str = ''): logging.log(lvl, '|CONID {:2d}| '.format(self.id) + msg)
     def _info(self, msg: str): self._log(logging.INFO, msg)
     def _warn(self, msg: str): self._log(logging.WARN, msg)
     def _debug(self, msg: str): self._log(logging.DEBUG, msg)
@@ -74,7 +74,7 @@ class PeerConnection:
 
                 async for msg in PeerStreamIterator(self.reader, buf):
                     print(msg)
-                    self._debug(str(msg))
+                    self._info("received {}".format(str(msg)))
                     if self.state.is_stopped:
                         break
 
