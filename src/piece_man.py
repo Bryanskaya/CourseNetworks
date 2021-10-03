@@ -160,6 +160,10 @@ class PieceManager:
 
             self.ongoing_pieces.remove(piece)
             self.have_pieces.append(piece)
+            print('Piece {} downloaded, {:.2%} done'.
+                  format(piece.index,
+                         len(self.have_pieces) / len(self.torrent.pieces)))
+
             logging.info('Piece {} downloaded, {:.2%} done'.
                          format(piece.index,
                                 len(self.have_pieces) / len(self.torrent.pieces)))

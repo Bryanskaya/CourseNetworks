@@ -246,6 +246,7 @@ class PeerStreamIterator:
             )[0]
 
             if not msg_len:
+                self.buffer = self.buffer[4:]
                 return KeepAliveMsg()
 
             if len(self.buffer) >= msg_len:
