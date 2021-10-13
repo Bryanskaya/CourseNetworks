@@ -12,8 +12,14 @@ logging.basicConfig(level=log_lvl, filename='info.log', filemode='w',
 
 
 def main():
-    loop = asyncio.get_event_loop()
-    client = TorrentClient(Torrent(FNAME))
+    run_loading(FNAME, './')
+
+
+def run_loading(tor_path: str, file_path: str):
+    # loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    client = TorrentClient(Torrent(tor_path), file_path)
     task = loop.create_task(client.start())
 
     try:

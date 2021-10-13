@@ -76,10 +76,10 @@ class PieceManager:
     pending_blocks: List[Block] = []            # Блоки в процессе загрузки
     max_pending_time = 1 * 60  # one minute
 
-    def __init__(self, torrent: Torrent):
+    def __init__(self, torrent: Torrent, file_path: str):
         self.torrent = torrent
         self.missing_pieces = self._initiate_pieces()
-        self._file_init()
+        self._file_init(file_path)
 
     def _initiate_pieces(self) -> [Piece]:
         # TODO refactor
@@ -238,8 +238,11 @@ class PieceManager:
         os.lseek(self.fd, pos, os.SEEK_SET)
         os.write(self.fd, piece.data)
 
-    def _file_init(self):
-        self.fd = os.open(self.torrent.output_file, os.O_RDWR | os.O_CREAT | os.O_TRUNC)
+    def _file_init(self, file_path: str):
+        self.file_path = file_path + '/' + self.torrent.output_file
+        logging.info('Loading in {}'.format(self.file_path))
+
+        self.fd = os.open(self.file_path, os.O_RDWR | os.O_CREAT | os.O_TRUNC)
         pos = (len(self.torrent.pieces) - 1) * self.torrent.piece_length
         os.lseek(self.fd, pos, os.SEEK_SET)
         os.write(self.fd, b'\0')

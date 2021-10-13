@@ -15,11 +15,11 @@ MAX_PEER_CONNECTIONS = 40  # 40
 class TorrentClient:
     abort = False
 
-    def __init__(self, torrent: Torrent):
+    def __init__(self, torrent: Torrent, file_path: str):
         self.tracker = Tracker(torrent)
         self.available_peers = Queue()
         self.peers: List[PeerConnection] = []
-        self.piece_manager = PieceManager(torrent)
+        self.piece_manager = PieceManager(torrent, file_path)
 
     async def start(self):
         self.peers = [PeerConnection(i, self.available_peers,
@@ -85,7 +85,3 @@ class TorrentClient:
         self.piece_manager.block_received(peer_id, piece_index, block_offset, data)
 
     # TODO piece_manager
-
-    async def stop(self):
-        await self.tracker.close()
-

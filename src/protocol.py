@@ -73,7 +73,6 @@ class PeerConnection:
                 await self._send_interested()
 
                 async for msg in PeerStreamIterator(self.reader, buf):
-                    print(msg)
                     self._info("received {}".format(str(msg)))
                     if self.state.is_stopped:
                         break
