@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.12.4, 2021-10-13T17:16:54. -->
+<!-- Written by QtCreator 4.12.4, 2021-10-13T21:50:12. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -151,11 +151,11 @@
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">main</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">PythonEditor.RunConfiguration.C:/msys64/home/bryan/CourseNetworks/src/UI/UITorrent/main.py</value>
-    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">C:/msys64/home/bryan/CourseNetworks/src/UI/UITorrent/main.py</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">PythonEditor.RunConfiguration.C:/msys64/home/bryan/CourseNetworks/src/ui/main.py</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">C:/msys64/home/bryan/CourseNetworks/src/ui/main.py</value>
     <value type="bool" key="PythonEditor.RunConfiguation.Buffered">false</value>
     <value type="QString" key="PythonEditor.RunConfiguation.Interpreter">{c0ea3ba5-e9d8-4635-bd28-f851c1309a3c}</value>
-    <value type="QString" key="PythonEditor.RunConfiguation.Script">C:\msys64\home\bryan\CourseNetworks\src\UI\UITorrent\main.py</value>
+    <value type="QString" key="PythonEditor.RunConfiguation.Script">C:\msys64\home\bryan\CourseNetworks\src\ui\main.py</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="bool" key="RunConfiguration.Arguments.multi">false</value>
     <value type="QString" key="RunConfiguration.OverrideDebuggerStartup"></value>
@@ -165,7 +165,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/msys64/home/bryan/CourseNetworks/src/UI/UITorrent</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/msys64/home/bryan/CourseNetworks/src/ui</value>
    </valuemap>
    <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
   </valuemap>

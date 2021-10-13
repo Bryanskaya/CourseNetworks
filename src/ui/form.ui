@@ -493,7 +493,8 @@
     <string notr="true">background-color: rgb(246, 239, 219);
 color: rgb(2, 62, 95);
 border-top-left-radius: 10px;
-border-bottom-left-radius: 10px;</string>
+border-bottom-left-radius: 10px;
+padding-left: 13px;</string>
    </property>
    <property name="text">
     <string/>
@@ -1534,8 +1535,7 @@ border-radius: 15px;</string>
     <string notr="true">background-color: rgb(246, 239, 219);
 border-top-left-radius: 10px;
 border-bottom-left-radius: 10px;
-margin: 0px;
-padding: 0px;</string>
+padding-left: 13px;</string>
    </property>
    <property name="text">
     <string/>
