@@ -1,5 +1,3 @@
-# Лабораторная работа №4
-
 import sys
 from ui.my_gui import *
 
@@ -27,6 +25,7 @@ def main():
     application.show()
 
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()
