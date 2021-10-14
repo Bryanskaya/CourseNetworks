@@ -24,7 +24,7 @@ def run_loading(tor_path: str, file_path: str):
 
     try:
         loop.run_until_complete(task)
-    except:
+    except Exception as e:
         logging.info(" event loop was cancelled")
 
 

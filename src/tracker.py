@@ -69,7 +69,7 @@ class Tracker:
             params['event'] = 'started'
         try:
             url = self.torrent.announce + '?' + urlencode(params)
-            logging.info(' connecting to tracker. URL: ' + url)
+            logging.info('connecting to tracker. URL: ' + url)
 
             async with self.http_client.get(url, ssl=False) as response:
                 if response.status != 200:

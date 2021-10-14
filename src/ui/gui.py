@@ -180,7 +180,6 @@ class Ui_Window(object):
 "border-top-left-radius: 10px;\n"
 "border-bottom-left-radius: 10px;\n"
 "padding-left: 13px;")
-        self.torLine.setText("")
         self.torLine.setReadOnly(True)
         self.torLine.setObjectName("torLine")
         self.openTorBtn = QtWidgets.QToolButton(Window)
@@ -534,7 +533,6 @@ class Ui_Window(object):
 "border-top-left-radius: 10px;\n"
 "border-bottom-left-radius: 10px;\n"
 "padding-left: 13px;")
-        self.locLine.setText("")
         self.locLine.setReadOnly(True)
         self.locLine.setObjectName("locLine")
         self.label_2 = QtWidgets.QLabel(Window)
@@ -778,9 +776,11 @@ class Ui_Window(object):
     def retranslateUi(self, Window):
         _translate = QtCore.QCoreApplication.translate
         Window.setWindowTitle(_translate("Window", "Window"))
+        self.torLine.setText(_translate("Window", "D:/Work/CourseNetworks/src/tor.torrent"))
         self.openTorBtn.setText(_translate("Window", "..."))
         self.label.setText(_translate("Window", ".torrent файл"))
         self.openLocBtn.setText(_translate("Window", "..."))
+        self.locLine.setText(_translate("Window", "D:/heh"))
         self.label_2.setText(_translate("Window", "Локация загрузки"))
         self.label_6.setText(_translate("Window", "Размер файла"))
         self.label_7.setText(_translate("Window", "Скачано"))
