@@ -12,13 +12,14 @@ app, application = None, None
 
 
 class Worker(QObject):
+    started = pyqtSignal()
     finished = pyqtSignal()
+    tor_client: Optional[TorrentClient] = None
 
     def __init__(self, tor_path: str, file_path: str):
         super().__init__()
         self.tor_path = tor_path
         self.file_path = file_path
-        self.tor_client = None
 
     @pyqtSlot()
     def run(self):
@@ -27,17 +28,20 @@ class Worker(QObject):
         self.tor_client = TorrentClient(Torrent(self.tor_path), self.file_path)
         task = loop.create_task(self.tor_client.start())
 
+        self.started.emit()
         try:
             loop.run_until_complete(task)
         except Exception as e:
             logging.info("event loop was cancelled")
-
         self.finished.emit()
 
 
 class MainWin(QtWidgets.QMainWindow):
+    upd_period = 500  # mseconds
+
     ui = None
-    # worker: Optional[Worker] = None
+    tor: Optional[TorrentClient] = None
+    obj: Optional[Worker] = None
     thread: Optional[QThread] = None
 
     def __init__(self, parent=None):
@@ -48,23 +52,40 @@ class MainWin(QtWidgets.QMainWindow):
         self.setAnimated(True)
         self.setUpdatesEnabled(True)
 
+        # setup timer for torrent status update
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.upd_torinfo)
+
     def start_loading(self, tor_path: str, file_path: str):
         print('Loading files', tor_path, file_path)
 
-        self._init_thread(tor_path, file_path)
+        self._init_worker(tor_path, file_path)
+        self._init_thread()
         self.thread.start()
 
-    def _init_thread(self, tor_path: str, file_path: str):
+    def _init_worker(self, tor_path: str, file_path: str):
         self.obj = Worker(tor_path, file_path)
-        self.thread = QThread()
-        # self.obj.intReady.connect(self.onIntReady)
-        self.obj.moveToThread(self.thread)
+        self.obj.started.connect(self.on_tor_start)
         self.obj.finished.connect(self.on_tor_done)
+
+    def _init_thread(self):
+        self.thread = QThread()
+        self.obj.moveToThread(self.thread)
         self.thread.started.connect(self.obj.run)
 
     @pyqtSlot()
+    def on_tor_start(self):
+        self.tor = self.obj.tor_client
+        self.timer.start(self.upd_period)
+
+    @pyqtSlot()
+    def upd_torinfo(self):
+        self.ui.upd_torrent(self.tor)
+
+    @pyqtSlot()
     def on_tor_done(self):
-        print('hello')
+        print('loading is over')
+        self.timer.stop()
 
 
 def main():

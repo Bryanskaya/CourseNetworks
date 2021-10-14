@@ -84,19 +84,15 @@ class PeerConnection:
 
             except concurrent.futures._base.CancelledError as exp:
                 print("Exception!!!")
-                print(exp)
-                logging.error("сейчас будет error")
+                print(str(exp))
                 self._exep(exp)
-                logging.error("ну вот")
                 await self.cancel()
                 raise exp
 
             except Exception as exp:
                 print("Exception!")
-                print(exp)
-                logging.error("сейчас будет error")
+                print(str(exp))
                 self._exep(exp)
-                logging.error("ну вот")
                 await self.cancel()
                 raise exp
             self._info('Out of loop')
@@ -142,6 +138,7 @@ class PeerConnection:
 
     async def cancel(self):
         self._info('closing peer {ip}'.format(ip=self.remote_id))
+        self.remote_id = None
         if not self.future.done():
             pass # self.future.cancel()
         if self.writer:

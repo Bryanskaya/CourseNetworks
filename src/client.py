@@ -85,3 +85,14 @@ class TorrentClient:
         self.piece_manager.block_received(peer_id, piece_index, block_offset, data)
 
     # TODO piece_manager
+
+    @property
+    def total_size(self) -> int:
+        return self.tracker.torrent.total_size
+
+    @property
+    def active_peer_n(self) -> int:
+        n = sum(1 if peer.remote_id is not None
+                else 0
+                for peer in self.peers)
+        return n

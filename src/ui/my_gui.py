@@ -1,4 +1,5 @@
 from .gui import *
+from client import TorrentClient
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor, QGuiApplication
@@ -42,6 +43,10 @@ class GuiMainWin(QtWidgets.QWidget, Ui_Window):
         fname = QFileDialog.getExistingDirectory(self, 'Выберите место загрузки', init_path)
         if fname:
             self.locLine.setText(fname)
+
+    def upd_torrent(self, tor: TorrentClient):
+        self.totalSizeL.setText('{:.1f} КБ'.format(tor.total_size / 1024))
+        self.peerNL.setText('{}'.format(tor.active_peer_n))
 
     def _start_load(self):
         tor_path = self.torLine.text()
