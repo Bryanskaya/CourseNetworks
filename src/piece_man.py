@@ -217,7 +217,9 @@ class PieceManager:
     def _get_rarest_piece(self, peer_id: str) -> Optional[Piece]:
         piece_count = defaultdict(int)
 
-        for piece in self.missing_pieces[::-1]:
+        missing_list = self.missing_pieces[:]
+        random.shuffle(missing_list)
+        for piece in missing_list:
             if not self.peers[peer_id][piece.index]:
                 continue
             for peer in self.peers:
