@@ -96,3 +96,7 @@ class TorrentClient:
                 else 0
                 for peer in self.peers)
         return n
+
+    @property
+    def loaded_bytes(self) -> int:
+        return self.piece_manager.loaded_bytes

@@ -29,7 +29,7 @@ class Block:
 
 
 class Piece:
-    def __init__(self, index: int, blocks: [Block], hash_value: bytes):
+    def __init__(self, index: int, blocks: List[Block], hash_value: bytes):
         self.index = index
         self.blocks = blocks
         self.hash = hash_value
@@ -61,18 +61,29 @@ class Piece:
         data_hash = sha1(self.data).digest()
         return data_hash == self.hash
 
+    def clear_data(self):
+        del self.blocks
+        self.blocks = []
+
     @property
     def data(self):
         retrieved = sorted(self.blocks, key=lambda b: b.offset)
         blocks_data = [b.data for b in retrieved]
         return b''.join(blocks_data)
 
+    @property
+    def loaded_bytes(self):
+        return sum(b.length if b.status is Block.Retrieved
+                   else 0
+                   for b in self.blocks)
+
 
 class PieceManager:
     missing_pieces: List[Piece] = []            # Pieces которых нет совсем
     ongoing_pieces: List[Piece] = []            # Pieces в процессе загрузки
-    have_pieces: List[Piece] = []               # Pieces загруженные
+    # have_pieces: List[Piece] = []               # Pieces загруженные
 
+    piecemap: bitstring.BitArray
     peers: Dict[str, bitstring.BitArray] = {}   # Пара id пира: бит-карта pieces
     pending_blocks: List[Block] = []            # Блоки в процессе загрузки
     max_pending_time = 1 * 60  # one minute
@@ -86,6 +97,8 @@ class PieceManager:
         # TODO refactor
         pieces: List[Piece] = []
         num_pieces = len(self.torrent.pieces)
+        self.piecemap = bitstring.BitArray(num_pieces)
+
         piece_block_n = math.ceil(self.torrent.piece_length / REQUEST_SIZE)
 
         for index, hash_value in enumerate(self.torrent.pieces):
@@ -160,20 +173,25 @@ class PieceManager:
             return
 
         if piece.is_hash_matching():
-            self._write(piece)
-
-            self.ongoing_pieces.remove(piece)
-            self.have_pieces.append(piece)
-            print('Piece {} downloaded, {:.2%} done'.
-                  format(piece.index,
-                         len(self.have_pieces) / len(self.torrent.pieces)))
-
-            logging.info('Piece {} downloaded, {:.2%} done'.
-                         format(piece.index,
-                                len(self.have_pieces) / len(self.torrent.pieces)))
+            self._piece_loaded(piece)
         else:
             logging.warning('Piece {} corrupted, refetching'.
                             format(piece.index))
+
+    def _piece_loaded(self, piece: Piece):
+        self._write(piece)
+
+        self.ongoing_pieces.remove(piece)
+        piece.clear_data()
+        # self.have_pieces.append(piece)
+        self.piecemap[piece.index] = True
+        print('Piece {} downloaded, {:.2%} done'.
+              format(piece.index,
+                     sum(self.piecemap) / len(self.piecemap)))
+
+        logging.info('Piece {} downloaded, {:.2%} done'.
+                     format(piece.index,
+                            sum(self.piecemap) / len(self.piecemap)))
 
     def _oldest_request(self, peer_id: str) -> Optional[Block]:
         if not self.pending_blocks:
@@ -252,6 +270,14 @@ class PieceManager:
 
     @property
     def complete(self) -> bool:
-        return len(self.torrent.pieces) == len(self.have_pieces)
+        return sum(self.piecemap) == len(self.piecemap)
 
+    @property
+    def loaded_bytes(self) -> int:
+        having_bytes = sum(self.piecemap) * self.torrent.piece_length  # bug: last piece hasn't full length
+        ongoing_bytes = sum(p.loaded_bytes for p in self.ongoing_pieces)
+        return having_bytes + ongoing_bytes
 
+    @property
+    def piece_n(self) -> int:
+        return len(self.piecemap)
