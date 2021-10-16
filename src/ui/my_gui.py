@@ -2,21 +2,28 @@ from .gui import *
 from client import TorrentClient
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QCursor, QGuiApplication
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtGui import QCursor, QGuiApplication, QBrush, QColor, QPen
+from PyQt5.QtWidgets import QFileDialog, QGraphicsScene
 from math import *
 from time import *
 from matplotlib import pyplot
+import bitstring
 
 
 class GuiMainWin(QtWidgets.QWidget, Ui_Window):
     def __init__(self, parent:QtWidgets.QMainWindow):
         super(GuiMainWin, self).__init__(parent)
+        self.scene = QGraphicsScene()
+        self.scene.setBackgroundBrush(QColor(246, 239, 219))
 
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
         self.set_binds()
         self._set_action_start()
+        self.loadBar.setScene(self.scene)
+        self.loadBar.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.loadBar.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.loadBar.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
     def set_binds(self):
         self.openTorBtn.clicked.connect(self.open_tor)
@@ -45,9 +52,17 @@ class GuiMainWin(QtWidgets.QWidget, Ui_Window):
             self.locLine.setText(fname)
 
     def upd_torrent(self, tor: TorrentClient):
+        self.scene.clear()
+        self.scene.setSceneRect(0, 0, len(tor.loaded_map), 1000)
+        self.loadBar.fitInView(self.scene.sceneRect(), Qt.IgnoreAspectRatio)
+
         self.totalSizeL.setText('{:0,.1f} КБ'.format(tor.total_size / 1024).replace(',', ' '))
         self.loadSizeL.setText('{:0,.1f} КБ'.format(tor.loaded_bytes / 1024).replace(',', ' '))
         self.peerNL.setText('{}'.format(tor.active_peer_n))
+        self._show_map(tor.ongoing_map, QPen(QColor(253, 216, 91)))
+        self._show_map(tor.loaded_map, QPen(QColor(105, 187, 112)))
+
+        #self.scene.addRect(0, 0, 1, 1, QColor(Qt.red))
 
     def _start_load(self):
         tor_path = self.torLine.text()
@@ -77,3 +92,14 @@ class GuiMainWin(QtWidgets.QWidget, Ui_Window):
         msg.setInformativeText('Укажите путь к torrent-файлу и директорию загрузеи')
         msg.setWindowTitle("Ошибка")
         msg.exec_()
+
+    def _show_map(self, m: bitstring.BitArray, pen: QPen):
+        width, height = self.loadBar.width(), self.loadBar.height()
+        detail = 1 # width / len(m)
+        x = 0
+
+        for elem in m:
+            if elem:
+                self.scene.addRect(x, 0, detail, 1000, pen)
+
+            x += detail

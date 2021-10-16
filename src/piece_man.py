@@ -281,3 +281,13 @@ class PieceManager:
     @property
     def piece_n(self) -> int:
         return len(self.piecemap)
+
+    @property
+    def ongoing_map(self) -> bitstring.BitArray:
+        num_pieces = len(self.torrent.pieces)
+        ongoing_map = bitstring.BitArray(num_pieces)
+
+        for p in self.ongoing_pieces:
+            ongoing_map[p.index] = True
+
+        return ongoing_map

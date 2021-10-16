@@ -5,6 +5,7 @@ from typing import List
 
 import logging
 import time
+import bitstring
 
 from protocol import PeerConnection
 from piece_man import PieceManager
@@ -100,3 +101,11 @@ class TorrentClient:
     @property
     def loaded_bytes(self) -> int:
         return self.piece_manager.loaded_bytes
+
+    @property
+    def ongoing_map(self) -> bitstring.BitArray:
+        return self.piece_manager.ongoing_map
+
+    @property
+    def loaded_map(self) -> bitstring.BitArray:
+        return self.piece_manager.piecemap
