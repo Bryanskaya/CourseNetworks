@@ -45,9 +45,9 @@ class GuiMainWin(QtWidgets.QWidget, Ui_Window):
             self.locLine.setText(fname)
 
     def upd_torrent(self, tor: TorrentClient):
-        self.totalSizeL.setText('{:.1f} КБ'.format(tor.total_size / 1024))
+        self.totalSizeL.setText('{:0,.1f} КБ'.format(tor.total_size / 1024).replace(',', ' '))
+        self.loadSizeL.setText('{:0,.1f} КБ'.format(tor.loaded_bytes / 1024).replace(',', ' '))
         self.peerNL.setText('{}'.format(tor.active_peer_n))
-        self.loadSizeL.setText('{:.1f} КБ'.format(tor.loaded_bytes / 1024))
 
     def _start_load(self):
         tor_path = self.torLine.text()

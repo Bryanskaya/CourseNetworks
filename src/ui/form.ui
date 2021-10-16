@@ -2267,6 +2267,16 @@ color: rgb(255, 255, 255);</string>
     <string>Стоп</string>
    </property>
   </widget>
+  <widget class="QGraphicsView" name="loadBar">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>349</y>
+     <width>681</width>
+     <height>91</height>
+    </rect>
+   </property>
+  </widget>
   <zorder>torLine</zorder>
   <zorder>openTorBtn</zorder>
   <zorder>label</zorder>
@@ -2277,6 +2287,7 @@ color: rgb(255, 255, 255);</string>
   <zorder>progressBar</zorder>
   <zorder>stopBtn</zorder>
   <zorder>startBtn</zorder>
+  <zorder>loadBar</zorder>
  </widget>
  <resources/>
  <connections/>

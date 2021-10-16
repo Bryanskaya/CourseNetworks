@@ -792,6 +792,9 @@ class Ui_Window(object):
         self.stopBtn.setStyleSheet("background: rgb(211, 68, 12);\n"
 "color: rgb(255, 255, 255);")
         self.stopBtn.setObjectName("stopBtn")
+        self.loadBar = QtWidgets.QGraphicsView(Window)
+        self.loadBar.setGeometry(QtCore.QRect(120, 349, 681, 91))
+        self.loadBar.setObjectName("loadBar")
         self.torLine.raise_()
         self.openTorBtn.raise_()
         self.label.raise_()
@@ -802,6 +805,7 @@ class Ui_Window(object):
         self.progressBar.raise_()
         self.stopBtn.raise_()
         self.startBtn.raise_()
+        self.loadBar.raise_()
 
         self.retranslateUi(Window)
         QtCore.QMetaObject.connectSlotsByName(Window)
