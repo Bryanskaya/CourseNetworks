@@ -14,7 +14,7 @@ MAX_PEER_CONNECTIONS = 40  # 40
 
 
 class TorrentClient:
-    abort = False
+    aborted = False
 
     def __init__(self, torrent: Torrent, file_path: str):
         self.tracker = Tracker(torrent)
@@ -37,8 +37,8 @@ class TorrentClient:
                 print('Torrent fully downloaded!')
                 logging.info('Torrent fully downloaded!')
                 break
-            if self.abort:
-                logging.info(" Torrent is downloaded")
+            if self.aborted:
+                logging.info("torrent is aborted")
                 break
 
             cur_time = time.time()
@@ -69,7 +69,7 @@ class TorrentClient:
         await self.stop()
 
     async def stop(self) -> None:
-        self.abort = True
+        self.aborted = True
 
         for peer in self.peers:
             peer.stop()
@@ -77,6 +77,9 @@ class TorrentClient:
         # TODO close piece_manager
 
         await self.tracker.close()
+
+    def abort(self):
+        self.aborted = True
 
     def _empty_queue(self) -> None:
         while not self.available_peers.empty():

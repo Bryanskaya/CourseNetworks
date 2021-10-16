@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>481</height>
+    <height>480</height>
    </rect>
   </property>
   <property name="palette">
@@ -1749,7 +1749,7 @@ padding-left: 13px;</string>
      <x>0</x>
      <y>440</y>
      <width>121</width>
-     <height>43</height>
+     <height>42</height>
     </rect>
    </property>
    <property name="palette">
@@ -2253,7 +2253,7 @@ color: rgb(255, 255, 255);</string>
     <rect>
      <x>120</x>
      <y>440</y>
-     <width>681</width>
+     <width>680</width>
      <height>41</height>
     </rect>
    </property>

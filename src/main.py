@@ -63,6 +63,9 @@ class MainWin(QtWidgets.QMainWindow):
         self._init_thread()
         self.thread.start()
 
+    def stop_loading(self):
+        self.tor.abort()
+
     def _init_worker(self, tor_path: str, file_path: str):
         self.obj = Worker(tor_path, file_path)
         self.obj.started.connect(self.on_tor_start)
@@ -86,6 +89,7 @@ class MainWin(QtWidgets.QMainWindow):
     def on_tor_done(self):
         print('loading is over')
         self.timer.stop()
+        self.ui.set_action_start()
 
 
 def main():
