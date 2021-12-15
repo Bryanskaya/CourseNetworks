@@ -94,7 +94,6 @@ class PieceManager:
         self._file_init(file_path)
 
     def _initiate_pieces(self) -> [Piece]:
-        # TODO refactor
         pieces: List[Piece] = []
         num_pieces = len(self.torrent.pieces)
         self.piecemap = bitstring.BitArray(num_pieces)
@@ -277,6 +276,10 @@ class PieceManager:
         having_bytes = sum(self.piecemap) * self.torrent.piece_length  # bug: last piece hasn't full length
         ongoing_bytes = sum(p.loaded_bytes for p in self.ongoing_pieces)
         return having_bytes + ongoing_bytes
+
+    @property
+    def uploaded_bytes(self) -> int:
+        return 0
 
     @property
     def piece_n(self) -> int:

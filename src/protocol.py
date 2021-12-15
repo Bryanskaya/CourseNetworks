@@ -65,7 +65,6 @@ class PeerConnection:
             self._info("assigned peer, ip = {}".format(ip))
 
             try:
-                #TODO look at the comment in real src
                 self.reader, self.writer = await asyncio.open_connection(ip, port)
                 self._info("connection was opened, ip = " + ip)
 
@@ -79,8 +78,6 @@ class PeerConnection:
 
                     await self._process_response(msg)
                     await self._create_message()
-
-                    #TODO comment in real src
 
             except concurrent.futures._base.CancelledError as exp:
                 print("Exception!!!")
@@ -161,13 +158,12 @@ class PeerConnection:
         while len(buf) < HandshakeMsg.length and tries < 10:
             tries += 1
             buf += await self.reader.read(PeerStreamIterator.CHUNK_SIZE)
-            # TODO read length of handshake message instead of chunk size => return value is None
 
         response = HandshakeMsg.decode(buf)
         if response is None:
-            raise Exception()  # TODO protocol error (handshake are unable)
+            raise Exception()
         elif response.info_hash != self.info_hash:
-            raise Exception()  # TODO protocol error (invalid info_hash)
+            raise Exception()
 
         self.remote_id = response.peer_id
         self._debug('handshake with peer {} are successful'.format(self.remote_id))
@@ -225,7 +221,7 @@ class PeerStreamIterator:
 
                 if self.buffer:
                     msg = self.parse()
-                    if msg: return msg  # TODO strange
+                    if msg: return msg
                 break
 
         raise StopAsyncIteration

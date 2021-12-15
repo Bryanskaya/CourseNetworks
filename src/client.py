@@ -44,9 +44,8 @@ class TorrentClient:
             cur_time = time.time()
             if previous is None or cur_time - previous >= interval:
                 response = await self.tracker.connect(
-                    # TODO uncomment when piece_manager will be implemented
-                    # uploaded=self.piece_manager.bytes_uploaded,
-                    # downloaded=self.piece_manager.bytes_downloaded,
+                    uploaded=self.piece_manager.uploaded_bytes,
+                    downloaded=self.piece_manager.loaded_bytes,
                     first_call=previous if previous else False
                 )
                 previous = cur_time
@@ -74,8 +73,6 @@ class TorrentClient:
         for peer in self.peers:
             peer.stop()
 
-        # TODO close piece_manager
-
         await self.tracker.close()
 
     def abort(self):
@@ -88,7 +85,6 @@ class TorrentClient:
     def _block_retrieved(self, peer_id: str, piece_index: int, block_offset, data) -> None:
         self.piece_manager.block_received(peer_id, piece_index, block_offset, data)
 
-    # TODO piece_manager
 
     @property
     def total_size(self) -> int:
