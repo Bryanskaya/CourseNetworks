@@ -1,11 +1,12 @@
 \section{Конструкторская часть}
 
 \subsection{Основной алгоритм}
+Протокол BitTorrent предусматривает, что действия обмена информации с трекером и каждым из пиров производятся асинхронно, что и позволяет достичь такой высокой скорости загрузки. Поэтому в начале основного цикла программы создаётся заранее установленное количество обработчиков, каждый из которых выполняет асинхронное общение со своим пиром.
 
-На Рисунке \ref{fig200:image} приведен основной алгоритм работы Bittorrent-клиента.
+На Рисунке \ref{fig200:image} приведена схема этого алгоритма.
 \begin{figure}[h]
 	\begin{center}
-		{\includegraphics[scale = 0.75]{img/main.pdf}}
+		{\includegraphics[scale = 0.68]{img/main.pdf}}
 		\caption{Основной алгоритм}
 		\label{fig200:image}
 	\end{center}
@@ -41,7 +42,7 @@
 Детали взаимодействия с пирами приведены ниже, на Рисунке \ref{fig203:image}.
 \begin{figure}[h]
 	\begin{center}
-		{\includegraphics[scale = 0.7]{img/peer.pdf}}
+		{\includegraphics[scale = 0.67]{img/peer.pdf}}
 		\caption{Алгоритм взаимодействия с пирами}
 		\label{fig203:image}
 	\end{center}
