@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:java="http://www.yworks.com/xml/yfiles-common/1.0/java" xmlns:sys="http://www.yworks.com/xml/yfiles-common/markup/primitives/2.0" xmlns:x="http://www.yworks.com/xml/yfiles-common/markup/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:y="http://www.yworks.com/xml/graphml" xmlns:yed="http://www.yworks.com/xml/yed/3" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd">
-  <!--Created by yEd 3.20-->
+  <!--Created by yEd 3.20.1-->
   <key attr.name="Description" attr.type="string" for="graph" id="d0"/>
   <key for="port" id="d1" yfiles.type="portgraphics"/>
   <key for="port" id="d2" yfiles.type="portgeometry"/>
@@ -46,7 +46,7 @@
           <y:Geometry height="185.3213913043479" width="163.5930434782608" x="229.40695652173923" y="353.43336566438325"/>
           <y:Fill hasColor="false" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#FFFFFF" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="14" fontStyle="bold" hasLineColor="false" height="21.1513671875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="53.0" x="55.2965217391304" xml:space="preserve" y="4.0">Torrent</y:NodeLabel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#FFFFFF" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="14" fontStyle="bold" hasLineColor="false" height="21.1513671875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="53.0" x="55.29652173913041" xml:space="preserve" y="4.0">Torrent</y:NodeLabel>
           <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="14" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="141.2109375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="top" visible="true" width="140.541015625" x="2.0" xml:space="preserve" y="33.1513671875">+ content: dict
 + file: TorFile
 + Torrent(f_name: str)
@@ -82,21 +82,16 @@ first_call: bool)
     <node id="n3">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="320.8201700173913" width="318.0" x="771.0" y="379.5899149913044"/>
+          <y:Geometry height="235.28697703493515" width="318.0" x="771.0" y="379.5899149913044"/>
           <y:Fill hasColor="false" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#FFFFFF" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="14" fontStyle="bold" hasLineColor="false" height="21.1513671875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="111.3515625" x="103.32421875" xml:space="preserve" y="4.0">PeerConnection</y:NodeLabel>
-          <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="14" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="278.421875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="top" visible="true" width="278.326171875" x="2.0" xml:space="preserve" y="33.1513671875">+ remote_id: str
+          <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="14" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="192.6650390625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="top" visible="true" width="278.326171875" x="2.0" xml:space="preserve" y="33.1513671875">+ remote_id: str
 + PeerConnection(id: int, queue: Queue, 
 + info_hash: bytes, peer_id: str, 
 + piece_manager: PieceManager, block_cb)
 + cancel()
 + stop()
-- _log(lvl: int, msg: str)
-- _info(msg: str)
-- _warn(msg: str)
-- _debug(msg: str)
-- _exep(exp: Exception)
 - _start()
 - _process_response()
 - _create_message()
@@ -128,7 +123,7 @@ file_path: str)
     <node id="n5">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="118.31141160177867" width="318.0" x="621.0" y="760.0083661012595"/>
+          <y:Geometry height="118.31141160177867" width="318.0" x="352.7800915331803" y="682.4041796095444"/>
           <y:Fill hasColor="false" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#FFFFFF" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="14" fontStyle="bold" hasLineColor="false" height="21.1513671875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="42.1240234375" x="137.93798828125" xml:space="preserve" y="4.0">Block</y:NodeLabel>
@@ -145,7 +140,7 @@ file_path: str)
     <node id="n6">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="199.42913565025788" width="318.0" x="621.0" y="923.6694183607724"/>
+          <y:Geometry height="199.42913565025788" width="318.0" x="352.7800915331803" y="846.0652318690572"/>
           <y:Fill hasColor="false" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#FFFFFF" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="14" fontStyle="bold" hasLineColor="false" height="21.1513671875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="40.5859375" x="138.70703125" xml:space="preserve" y="4.0">Piece</y:NodeLabel>
@@ -167,7 +162,7 @@ hash_value: bytes)
     <node id="n7">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="357.5259243569883" width="318.0" x="231.55043478260882" y="680.0348639632009"/>
+          <y:Geometry height="357.5259243569883" width="318.0" x="730.0" y="644.8768920262396"/>
           <y:Fill hasColor="false" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#FFFFFF" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="14" fontStyle="bold" hasLineColor="false" height="21.1513671875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="98.158203125" x="109.9208984375" xml:space="preserve" y="4.0">PieceManager</y:NodeLabel>
@@ -236,7 +231,7 @@ block_offset, data)
     <edge id="e2" source="n3" target="n0">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-150.0000000000001" sy="-99.386736036799" tx="159.00157608695702" ty="90.98956521739137"/>
+          <y:Path sx="-87.8429443705262" sy="-72.88944668971357" tx="89.80444207382459" ty="74.72025807324877"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="white_diamond"/>
           <y:BendStyle smoothed="false"/>
@@ -276,7 +271,7 @@ block_offset, data)
     <edge id="e6" source="n7" target="n5">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="117.76319346972298" sy="-9.633754239546192" tx="-103.0666565388151" ty="30.0"/>
+          <y:Path sx="-19.992585564071078" sy="-81.50465705133001" tx="0.0" ty="0.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="white_diamond" target="none"/>
           <y:BendStyle smoothed="false"/>
@@ -286,7 +281,9 @@ block_offset, data)
     <edge id="e7" source="n7" target="n1">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-140.56573694284936" sy="50.82695281281019" tx="-61.21878042111018" ty="-21.261113043477735"/>
+          <y:Path sx="-115.74477854652741" sy="-161.23567459518938" tx="49.77132213997061" ty="-6.975846619293691">
+            <y:Point x="360.97480040084025" y="662.4041796095444"/>
+          </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="white_diamond" target="none"/>
           <y:BendStyle smoothed="false"/>
@@ -296,7 +293,7 @@ block_offset, data)
     <edge id="e8" source="n7" target="n6">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.5071165217394764" sy="84.61265790614766" tx="0.0" ty="-79.97350213805862"/>
+          <y:Path sx="-85.18556802021146" sy="104.94727277323148" tx="-2.637940255146418" ty="-17.192672716220954"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="white_diamond" target="none"/>
           <y:BendStyle smoothed="false"/>
@@ -306,9 +303,7 @@ block_offset, data)
     <edge id="e9" source="n0" target="n7">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="138.0" sy="112.06608695652187" tx="72.0" ty="-138.79782614169505">
-            <y:Point x="720.0" y="720.0"/>
-          </y:Path>
+          <y:Path sx="154.6195816499628" sy="112.76729588829528" tx="-152.3804183500372" ty="-150.52845086887442"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="white_diamond" target="none"/>
           <y:BendStyle smoothed="false"/>
@@ -316,12 +311,9 @@ block_offset, data)
       </data>
     </edge>
     <edge id="e10" source="n7" target="n3">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="142.79408695652205" sy="-118.78946004043553" tx="-139.20591304347795" ty="142.26111339702572">
-            <y:Point x="790.794086956522" y="740.0083661012595"/>
-          </y:Path>
+          <y:Path sx="145.42821850610358" sy="-134.84771318466346" tx="104.42821850610358" ty="78.76507283761407"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="white_diamond"/>
           <y:BendStyle smoothed="false"/>
@@ -329,7 +321,6 @@ block_offset, data)
       </data>
     </edge>
     <edge id="e11" source="n3" target="n8">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0">
@@ -343,7 +334,6 @@ block_offset, data)
       </data>
     </edge>
     <edge id="e12" source="n2" target="n1">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-93.8668770267858" sy="29.315914082017457" tx="57.02086956521754" ty="78.13591672866113">
