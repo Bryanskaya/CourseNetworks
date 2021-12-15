@@ -145,7 +145,6 @@ class PieceMsg(PeerMessage):
         msg_struct_UnInt = '>I'
         msg_struct = '>IbII'
 
-        # TODO change to method
         logging.debug('Decoding Piece of length: {}'.format(len(data)))
         length = struct.unpack(
             msg_struct_UnInt,
@@ -195,7 +194,7 @@ class HandshakeMsg(PeerMessage):
     length = 49 + len(pname)
     msg_struct = '>B19s8x20s20s'
 
-    def __init__(self, info_hash: bytes, peer_id: str):  #TODO bytes/str
+    def __init__(self, info_hash: bytes, peer_id: str):
         if isinstance(info_hash, str):
             info_hash = info_hash.encode('utf-8')
         if isinstance(peer_id, str):

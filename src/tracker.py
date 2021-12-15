@@ -30,7 +30,6 @@ class TrackerResponse:
     def peers(self):
         peers = self.response[b'peers']
         if type(peers) is list:
-            # TODO behavior for list of peers
             return None
         else:   # string
             peers = [decode_peer(peers[i:i+6])
@@ -87,6 +86,6 @@ class Tracker:
         await self.http_client.close()
 
 
-# Style: "-PC1000-<random-characters>"
-def _get_peer_id() -> str:  # TODO possible error
+# Style: "-PC1000-<12-random-characters>"
+def _get_peer_id() -> str:
     return '-PC1000-' + ''.join([str(random.randint(0, 9)) for _ in range(12)])
