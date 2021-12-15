@@ -135,4 +135,5 @@ dmypy.json
 *.out
 *.toc
 *.synctex
+*.synctex.gz
 *.toc
