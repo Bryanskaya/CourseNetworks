@@ -1,0 +1,143 @@
+
+\begin{lstlisting}[caption = {Класс TorrentClient}]
+class PeerConnection:
+	remote_id = None
+	writer: asyncio.StreamWriter = None
+	reader: asyncio.StreamReader = None
+	
+		def __init__(self, id: int, queue: Queue, info_hash: bytes, peer_id: str,
+		piece_manager: PieceManager, block_cb: Callable[[str, int, int, bytes], None]):
+		self.state = PeerState()
+		self.peer_state = OtherPeerState()
+		
+		self.id = id
+		self.queue = queue
+		self.info_hash = info_hash
+		self.peer_id = peer_id
+		self.piece_manager = piece_manager
+		self.block_cb = block_cb  # Callback function. It is called when block is received from the remote peer.
+		self.future = asyncio.ensure_future(self._start())
+	
+	async def _start(self):
+		while not self.state.is_stopped:
+			ip, port = await self.queue.get()
+			self._info("assigned peer, ip = {}".format(ip))
+			
+			try:
+				self.reader, self.writer = await asyncio.open_connection(ip, port)
+				self._info("connection was opened, ip = " + ip)
+				
+				buf = await self._do_handshake()
+				await self._send_interested()
+				
+				async for msg in PeerStreamIterator(self.reader, buf):
+					self._info("received {}".format(str(msg)))
+					if self.state.is_stopped:
+						break
+				
+					await self._process_response(msg)
+					await self._create_message()
+	
+			except concurrent.futures._base.CancelledError as exp:
+				self._exep(exp)
+				await self.cancel()
+				raise exp
+	
+			except Exception as exp:
+				self._exep(exp)
+				await self.cancel()
+				raise exp
+			self._info('Out of loop')
+			await self.cancel()
+	
+	async def _process_response(self, msg: PeerMessage):
+		if type(msg) is BitFieldMsg:
+			msg: BitFieldMsg
+			self.piece_manager.add_peer(self.remote_id, msg.bitfield)
+		elif type(msg) is InterestedMsg:
+			self.peer_state.interest()
+		elif type(msg) is NotInterestedMsg:
+			self.peer_state.uninterest()
+		elif type(msg) is ChokeMsg:
+			self.state.choke()
+		elif type(msg) is UnchokeMsg:
+			self.state.unchoke()
+		elif type(msg) is HaveMsg:
+			msg: HaveMsg
+			self.piece_manager.update_peer(self.remote_id, msg.index)
+		elif type(msg) is KeepAliveMsg:
+			pass
+		elif type(msg) is PieceMsg:
+			msg: PieceMsg
+			self.state.stop_pending()
+			self.block_cb(self.remote_id, msg.index, msg.begin, msg.block)
+		elif type(msg) is RequestMsg:
+			pass
+		elif type(msg) is CancelMsg:
+			pass
+		
+	async def _create_message(self):
+		if (not self.state.is_choked) and self.state.is_interested and (not self.state.is_pending):
+			self.state.start_pending()
+			success = await self._request_piece()
+			if not success:
+				self.state.stop_pending()
+	
+	async def cancel(self):
+		self._info('closing peer {ip}'.format(ip=self.remote_id))
+		self.remote_id = None
+		if not self.future.done():
+			pass 
+		if self.writer:
+			self.writer.close()
+			await self.writer.wait_closed()
+		
+		self.queue.task_done()
+	
+	def stop(self) -> None:
+		self.state.stop()
+		if not self.future.done():
+			self.future.cancel()
+	
+	async def _do_handshake(self) -> bytes:
+		self.writer.write(HandshakeMsg(self.info_hash, self.peer_id).encode())
+		await self.writer.drain()
+		
+		buf = b''
+		tries = 0
+		while len(buf) < HandshakeMsg.length and tries < 10:
+			tries += 1
+			buf += await self.reader.read(PeerStreamIterator.CHUNK_SIZE)
+		
+		response = HandshakeMsg.decode(buf)
+		if response is None:
+			raise Exception()
+		elif response.info_hash != self.info_hash:
+			raise Exception()
+		
+		self.remote_id = response.peer_id
+		self._debug('handshake with peer {} are successful'.format(self.remote_id))
+		
+		return buf[HandshakeMsg.length:]
+	
+	async def _send_interested(self) -> None:
+		msg = InterestedMsg()
+		self.writer.write(msg.encode())
+		await self.writer.drain()
+		self._debug('sending interested msg to {}'.format(self.remote_id))
+	
+	async def _request_piece(self) -> bool:
+		block = self.piece_manager.next_request(self.remote_id)
+		if block is None:
+			return False
+	
+		msg = RequestMsg(block.piece, block.offset, block.length).encode()
+		
+		self._debug('Requesting block {} of piece {} from {}'.
+	format(block.offset, block.piece, self.remote_id))
+	
+		self.writer.write(msg)
+		await self.writer.drain()
+		return True
+	
+\end{lstlisting}

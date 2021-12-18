@@ -1,0 +1,41 @@
+\begin{lstlisting}[caption = {Класс Tracker}]
+class Tracker:
+	def __init__(self, torrent: Torrent):
+		self.torrent = torrent
+		self.peer_id = _get_peer_id()
+		self.http_client = aiohttp.ClientSession()
+	
+	async def connect(self, uploaded: int = 0, downloaded: int = 0, first_call: bool = None):
+		params = {
+			'info_hash': self.torrent.info_hash,
+			'peer_id': self.peer_id,
+			'port': PORT,
+			'uploaded': uploaded,
+			'downloaded': downloaded,
+			'left': self.torrent.total_size - downloaded,
+			'compact': 1
+		}
+		
+		if first_call:
+			params['event'] = 'started'
+		try:
+			url = self.torrent.announce + '?' + urlencode(params)
+			logging.info('connecting to tracker. URL: ' + url)
+	
+		async with self.http_client.get(url, ssl=False) as response:
+			if response.status != 200:
+				raise ConnectionError("ERROR: connection to tracker failed. Code = " + str(response.status))
+	
+			data = await response.read()
+			self.raise_error(data)
+	
+			return TrackerResponse(bencodepy.decode(data))
+	except Exception as exp:
+		print(exp)
+	
+	async def close(self):
+		await self.http_client.close()
+\end{lstlisting}
+
+	
+	
