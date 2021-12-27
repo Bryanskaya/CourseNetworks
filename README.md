@@ -16,4 +16,4 @@ https://user-images.githubusercontent.com/54107546/147125892-1476ad71-d1b8-4b9b-
 
 ## Ссылки на источники
 
-[Отличный репозиторий для вдохновления](https://github.com/eliasson/pieces)
+[Ссылки на источники](https://github.com/Bryanskaya/CourseNetworks/wiki/%D0%A1%D1%81%D1%8B%D0%BB%D0%BA%D0%B8)
