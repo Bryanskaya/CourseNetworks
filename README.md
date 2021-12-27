@@ -13,3 +13,7 @@ https://user-images.githubusercontent.com/54107546/147125892-1476ad71-d1b8-4b9b-
 
 ## Результат
 ![image](https://user-images.githubusercontent.com/54107546/147128185-ecaee5ad-e0d4-4998-ac49-a40ad565881e.png)
+
+## Ссылки на источники
+
+[Отличный репозиторий для вдохновления](https://github.com/eliasson/pieces)
